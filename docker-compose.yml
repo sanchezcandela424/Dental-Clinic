@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: citydent-ims-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: citydent-ims
+    ports:
+      - "5433:5432"
+    volumes:
+      - citydent-ims-data:/var/lib/postgresql/data
+
+volumes:
+  citydent-ims-data:
