@@ -120,16 +120,6 @@ export function LoginForm() {
 
         </form>
 
-        {/* FOOTER */}
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Nemate račun?{" "}
-          <Link
-            href="/register"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Registrujte se
-          </Link>
-        </p>
 
       </div>
     </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +13,15 @@ import {
 export function RegisterForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  //temporary protection
+  useEffect(() => {
+    const isAdmin = process.env.NODE_ENV === "development";
+
+    if (!isAdmin) {
+      router.replace("/login");
+    }
+  }, [router]);
 
   const {
     register,
@@ -129,17 +137,6 @@ export function RegisterForm() {
           </button>
 
         </form>
-
-        {/* FOOTER */}
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Već imate račun?{" "}
-          <Link
-            href="/login"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Prijavite se
-          </Link>
-        </p>
 
       </div>
     </div>
