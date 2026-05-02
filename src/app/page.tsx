@@ -25,15 +25,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans selection:bg-blue-100 relative overflow-hidden">
       
-      {/* ARKA PLAN DEKORASYONU */}
+   
       <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-blue-50 rounded-full blur-3xl opacity-60 z-0" />
       <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-blue-50 rounded-full blur-3xl opacity-60 z-0" />
 
-      {/* --- ANA İÇERİK --- */}
+      
       <main className="flex-1 flex items-center justify-center p-6 z-10">
         <div className="w-full max-w-md space-y-8">
           
-          {/* LOGO VE BAŞLIK */}
+        
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="h-28 w-56 drop-shadow-sm">
               <SmilingTeethTeam className="h-full w-full" />
@@ -49,8 +49,8 @@ export default function LoginPage() {
           </div>
 
           {!selectedRole ? (
-            /* ROL SEÇİM EKRANI */
-            <div className="space-y-4 animate-in fade-in zoom-in duration-300">
+            
+             <div className="space-y-4 animate-in fade-in zoom-in duration-300">
               <h2 className="text-center text-xs font-bold text-slate-400 mb-6 uppercase tracking-[0.2em]">Odaberite ulogu za pristup</h2>
               
               <div className="grid grid-cols-1 gap-4">
@@ -69,7 +69,7 @@ export default function LoginPage() {
               </div>
             </div>
           ) : (
-            /* GİRİŞ FORMU EKRANI */
+            
             <Card className="border-none shadow-2xl shadow-blue-100/50 rounded-[32px] p-2 bg-white/80 backdrop-blur-md animate-in slide-in-from-right duration-300">
               <CardHeader className="space-y-1 pb-6 pt-6">
                 <button 
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {/* MINIMAL FOOTER */}
+    
       <footer className="p-6 text-center z-10">
         <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.4em]">
           CityDent IMS © 2026 | Sva prava zadržana
@@ -162,21 +162,21 @@ function RoleButton({ icon, title, description, onClick }: { icon: React.ReactNo
 function SmilingTeethTeam({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 350 200" className={className}>
-      {/* SOL DİŞ */}
+     
       <g transform="translate(5, 30) scale(0.8)">
         <path d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z" fill="white" stroke="#cbd5e1" strokeWidth="4" />
         <circle cx="85" cy="70" r="4" fill="#1e293b" /><circle cx="115" cy="70" r="4" fill="#1e293b" />
         <path d="M85,90 Q100,105 115,90" fill="none" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
       </g>
       
-      {/* SAĞ DİŞ */}
+  
       <g transform="translate(185, 30) scale(0.8)">
         <path d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z" fill="white" stroke="#cbd5e1" strokeWidth="4" />
         <circle cx="85" cy="70" r="4" fill="#1e293b" /><circle cx="115" cy="70" r="4" fill="#1e293b" />
         <path d="M85,90 Q100,105 115,90" fill="none" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
       </g>
       
-      {/* ORTA DİŞ */}
+    
       <g transform="translate(75, 5) scale(1.0)">
         <path d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z" fill="white" stroke="#3b82f6" strokeWidth="6" strokeLinejoin="round" />
         <circle cx="85" cy="70" r="5" fill="#1e293b" /><circle cx="115" cy="70" r="5" fill="#1e293b" />

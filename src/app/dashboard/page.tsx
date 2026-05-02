@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-// Next.js'de searchParams kullanımı için Suspense sarmalı gereklidir
+
 export default function DashboardPage() {
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Učitavanje...</div>}>
@@ -24,17 +24,17 @@ export default function DashboardPage() {
 function DashboardContent() {
   const searchParams = useSearchParams();
   
-  // URL'den rolü al (e.g., /dashboard?role=MASTER)
+
   const roleFromUrl = searchParams.get('role');
   const userRole: 'MASTER' | 'STAFF' = roleFromUrl === 'MASTER' ? 'MASTER' : 'STAFF';
   const isMaster = userRole === 'MASTER';
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100">
-      {/* --- SIDEBAR --- */}
+   
       <aside className="w-72 border-r bg-white flex flex-col p-6 space-y-8 hidden md:flex text-slate-600">
         
-        {/* LOGO BÖLÜMÜ (Simetrik Ölçek Korundu) */}
+        
         <div className="flex flex-col items-center gap-3 px-2 mb-2">
           <div className="h-24 w-36 flex items-center justify-center">
             <SmilingTeethTeam className="h-full w-full" />
@@ -49,20 +49,20 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Pretraga (Arama) */}
+   
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input placeholder="Pretraga pacijenata..." className="pl-10 h-10 bg-slate-50 border-none text-sm focus-visible:ring-1 ring-blue-100 rounded-xl" />
         </div>
 
-        {/* Navigacija */}
+       
         <nav className="flex-1 space-y-2">
           <NavItem icon={<LayoutDashboard size={18}/>} label="Nadzorna ploča" active />
           <NavItem icon={<CalendarClock size={18}/>} label="Kalendar i Termini" />
           <NavItem icon={<Users size={18}/>} label="Baza Pacijenata" />
           <NavItem icon={<Receipt size={18}/>} label="Računi i Naplata" />
           
-          {/* KOŞULLU RENDER: SADECE MASTER GÖREBİLİR */}
+         
           {isMaster && (
             <>
               <div className="pt-6 pb-2 animate-in fade-in duration-500">
@@ -77,7 +77,7 @@ function DashboardContent() {
         </nav>
       </aside>
 
-      {/* --- GLAVNI SADRŽAJ --- */}
+     
       <main className="flex-1 p-8 overflow-y-auto">
         <header className="flex justify-between items-center mb-8 text-slate-500">
             <div>
@@ -89,7 +89,7 @@ function DashboardContent() {
                   <Bell size={20} className="text-slate-500" />
               </Button>
 
-              {/* DİNAMİK PROFİL BUTONU */}
+             
               <Button 
                 variant={isMaster ? "default" : "secondary"}
                 className={`${isMaster ? 'bg-blue-950 hover:bg-blue-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} rounded-xl px-5 py-2 h-auto flex items-center gap-2 shadow-sm transition-all font-semibold text-sm`}
@@ -100,10 +100,10 @@ function DashboardContent() {
             </div>
         </header>
 
-        {/* KPI KARTLARI (Rol bazlı kolon yapısı) */}
+       
         <div className={`grid grid-cols-1 ${isMaster ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 mb-8`}>
           
-          {/* KOŞULLU RENDER: SADECE MASTER GÖREBİLİR (Gelir Kartı) */}
+          
           {isMaster && (
             <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl animate-in zoom-in duration-300">
               <CardHeader className="pb-1 px-5 pt-5">
@@ -155,7 +155,7 @@ function DashboardContent() {
           </Card>
         </div>
 
-        {/* Alt Bölüm: Hasta Listesi ve Grafik */}
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between bg-white border-b border-slate-50 px-6 py-4">
@@ -192,7 +192,7 @@ function DashboardContent() {
   );
 }
 
-// --- ALT BİLEŞENLER ---
+
 
 function SmilingTeethTeam({ className }: { className?: string }) {
   return (
