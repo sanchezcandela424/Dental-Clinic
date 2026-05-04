@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
-import { Inter } from "next/font/google"; // Profesyonel fontu içe aktar
+import { Inter } from "next/font/google";
+import Providers from "@/app/_components/Providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -7,15 +8,17 @@ const inter = Inter({
 });
 
 export default function RootLayout({
-  children,
-}: {
+                                     children,
+                                   }: {
   children: React.ReactNode;
 }) {
   return (
     <html lang="bs" className={inter.variable}>
-      <body className="font-sans antialiased">
-        {children}
-      </body>
+    <body className="font-sans antialiased">
+    <Providers>
+      {children}
+    </Providers>
+    </body>
     </html>
   );
 }
