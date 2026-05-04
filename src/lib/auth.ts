@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";
 
 export const authOptions: NextAuthOptions = {
+    // ─> Provider koji koristi email i lozinku za autentifikaciju
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -12,11 +13,19 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Lozinka", type: "password" },
             },
 
+            /**
+             * authorize() — glavna funkcija za provjeru korisnika.
+             *
+             * Poziva se kada korisnik pošalje login formu.
+             * Vraća user objekat ako su podaci ispravni, null ako nisu.
+             */
             async authorize(credentials) {
+                // 1. Provjera da su email i password uneseni
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
 
+                // 2. Pronadi korisnika iz baze po emailu (case-insensitive)
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email.toLowerCase().trim() },
                     select: {
@@ -28,12 +37,16 @@ export const authOptions: NextAuthOptions = {
                     },
                 });
 
+                // 3. Ako korisnik ne postoji, vrati null (neispravni podaci)
                 if (!user) return null;
 
+                // 4. Racun je deaktiviran
                 if (!user.isActive) {
+                    // Bacamo posebnu poruku koja će biti prikazana korisniku
                     throw new Error("Račun nije aktivan. Kontaktirajte administratora.");
                 }
 
+                // 5. Provjera lozinke
                 const passwordValid = await verifyPassword(
                     user.passwordHash,
                     credentials.password
@@ -41,6 +54,7 @@ export const authOptions: NextAuthOptions = {
 
                 if (!passwordValid) return null;
 
+                // 6. Ako je sve validno, vrati user objekat (bez passwordHash-a)
                 return {
                     id: user.id,
                     email: user.email,
@@ -50,6 +64,7 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
 
+    // -> JWT i session callbackovi za dodavanje user ID-a i role u token i session
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
@@ -59,6 +74,8 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
 
+        // session() se poziva pri provjeri sesije na klijentu
+        // Ovdje dodajemo id i role u session.user objekat, koji je dostupan putem useSession() i getServerSession() helpera
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string;
@@ -68,15 +85,18 @@ export const authOptions: NextAuthOptions = {
         },
     },
 
+    // -> Session strategija
     session: {
         strategy: "jwt",
         maxAge: 10 * 60,
     },
 
+    // -> JWT opcije
     jwt: {
         maxAge: 10 * 60,
     },
 
+    // -> Cookie konfiguracija
     cookies: {
         sessionToken: {
             name: "citydent_token",
@@ -89,9 +109,11 @@ export const authOptions: NextAuthOptions = {
         },
     },
 
+    // -> Custom stranice za prijavu, odjavu, greške itd.
     pages: {
         signIn: "/auth/login",
     },
 
+    // -> Secret
     secret: process.env.NEXTAUTH_SECRET,
 };
