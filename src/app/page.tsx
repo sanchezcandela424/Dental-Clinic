@@ -33,23 +33,24 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email,
         password,
-        role: selectedRole,
         redirect: false,
       });
 
       // KRİTİK KONTROL: Sadece 'ok' true ise yönlendir
-      if (result?.ok && !result?.error) {
-        router.push(`/dashboard?role=${selectedRole}`);
-      } else {
-        // Backend (route.ts) 'null' döndürürse burası çalışır
-        setServerError("Neispravan email ili lozinka");
-        setLoading(false);
-      }
+        if (result?.ok) {
+            router.push(`/dashboard?role=${selectedRole}`);
+        } else {
+            if (result?.error === "ACCOUNT_INACTIVE") {
+                setServerError("Vaš nalog je deaktiviran. Kontaktirajte administratora.");
+            } else {
+                setServerError("Neispravan email ili lozinka.");
+            }
+        }
     } catch (error) {
-      setServerError("Došlo je do greške pri prijavi");
-      setLoading(false);
+        setServerError("Došlo je do greške pri prijavi.");
+    } finally {
+        setLoading(false);
     }
-  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans selection:bg-blue-100 relative overflow-hidden">

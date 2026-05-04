@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
                 // 4. Racun je deaktiviran
                 if (!user.isActive) {
                     // Bacamo posebnu poruku koja će biti prikazana korisniku
-                    throw new Error("Račun nije aktivan. Kontaktirajte administratora.");
+                    throw new Error("ACCOUNT_INACTIVE");
                 }
 
                 // 5. Provjera lozinke
