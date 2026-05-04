@@ -1,6 +1,20 @@
-export { default } from "next-auth/middleware";
+import { withAuth } from "next-auth/middleware";
+
+export default withAuth({
+    secret: process.env.NEXTAUTH_SECRET,
+    pages: {
+        signIn: "/",
+    },
+    cookies: {
+        sessionToken: {
+            name: "citydent_token",
+        },
+    },
+});
+
 export const config = {
     matcher: [
+        "/dashboard",
         "/dashboard/:path*",
         "/patients/:path*",
         "/appointments/:path*",

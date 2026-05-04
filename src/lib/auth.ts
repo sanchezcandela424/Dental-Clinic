@@ -111,7 +111,7 @@ export const authOptions: NextAuthOptions = {
 
     // -> Custom stranice za prijavu, odjavu, greške itd.
     pages: {
-        signIn: "/auth/login",
+        signIn: "/",
     },
 
     // -> Secret

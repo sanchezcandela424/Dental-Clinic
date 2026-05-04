@@ -51,6 +51,7 @@ export default function LoginPage() {
     } finally {
         setLoading(false);
     }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans selection:bg-blue-100 relative overflow-hidden">
