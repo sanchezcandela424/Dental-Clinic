@@ -38,7 +38,7 @@ export default function LoginPage() {
 
       // KRİTİK KONTROL: Sadece 'ok' true ise yönlendir
         if (result?.ok) {
-            router.push(`/dashboard?role=${selectedRole}`);
+            router.push("/dashboard");
         } else {
             if (result?.error === "ACCOUNT_INACTIVE") {
                 setServerError("Vaš nalog je deaktiviran. Kontaktirajte administratora.");
