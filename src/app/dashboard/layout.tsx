@@ -15,7 +15,7 @@ export default function DashboardLayout({
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.replace("/auth/login");
+            router.replace("/");
         }
     }, [status, router]);
 
