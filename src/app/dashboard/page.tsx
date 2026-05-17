@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense } from 'react';
+import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
 import { 
   LayoutDashboard, Users, CalendarClock, Search, 
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
 
 export default function DashboardPage() {
   return (
@@ -31,54 +32,10 @@ function DashboardContent() {
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100">
-   
-      <aside className="w-72 border-r bg-white flex flex-col p-6 space-y-8 hidden md:flex text-slate-600">
-        
-        
-        <div className="flex flex-col items-center gap-3 px-2 mb-2">
-          <div className="h-24 w-36 flex items-center justify-center">
-            <SmilingTeethTeam className="h-full w-full" />
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-2xl font-black tracking-tighter text-[#1e293b] uppercase">
-              City<span className="text-[#3b82f6]">Dent</span>
-            </span>
-            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mt-1">
-              Sistem Uprave
-            </span>
-          </div>
-        </div>
 
-   
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input placeholder="Pretraga pacijenata..." className="pl-10 h-10 bg-slate-50 border-none text-sm focus-visible:ring-1 ring-blue-100 rounded-xl" />
-        </div>
 
-       
-        <nav className="flex-1 space-y-2">
-          <NavItem icon={<LayoutDashboard size={18}/>} label="Nadzorna ploča" active />
-          <NavItem icon={<CalendarClock size={18}/>} label="Kalendar i Termini" />
-          <NavItem icon={<Users size={18}/>} label="Baza Pacijenata" />
-          <NavItem icon={<Receipt size={18}/>} label="Računi i Naplata" />
-          
-         
-          {isMaster && (
-            <>
-              <div className="pt-6 pb-2 animate-in fade-in duration-500">
-                <div className="flex items-center gap-2 px-4">
-                  <ShieldAlert size={14} className="text-rose-500" />
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master Opcije</p>
-                </div>
-              </div>
-              <NavItem icon={<Settings size={18}/>} label="Cjenovnik i Postavke" isMasterOnly />
-            </>
-          )}
-        </nav>
-      </aside>
 
-     
-      <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-8 overflow-y-auto">
         <header className="flex justify-between items-center mb-8 text-slate-500">
             <div>
               <h1 className="text-2xl font-bold text-blue-950 uppercase tracking-tighter">City Dental</h1>

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import AutoLogoutProvider from "@/app/_components/AutoLogoutProvider";
-
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
 export default function DashboardLayout({
                                             children,
                                         }: {
@@ -31,7 +31,17 @@ export default function DashboardLayout({
 
     return (
         <AutoLogoutProvider>
-            {children}
+
+            <div className="flex min-h-screen bg-[#F8FAFC]">
+
+                <DashboardSidebar />
+
+                <main className="flex-1 overflow-y-auto">
+                    {children}
+                </main>
+
+            </div>
+
         </AutoLogoutProvider>
     );
 }
