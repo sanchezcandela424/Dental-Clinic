@@ -11,15 +11,20 @@ export const patientSchema = z.object({
 
     email: z
         .string()
-        .email("Unesite ispravnu email adresu"),
+        .email("Unesite ispravnu email adresu")
+        .optional()
+        .or(z.literal("")),
 
     phone: z
         .string()
         .trim()
         .regex(
             /^\+[1-9]\d{8,14}$/,
-            "Unesite validan broj telefona "
-        ),
+            "Unesite validan broj telefona ")
+        .optional()
+        .or(z.literal("")),
+
+    sex: z.enum(["M", "F"]).optional(),
     // PRISMA -> jmb
     jmb: z
         .string()
@@ -31,23 +36,7 @@ export const patientSchema = z.object({
     employmentStatus: z.string().optional(),
 
     address: z.string().optional(),
-
-    // ANAMNESIS
-    allergiesFlag: z.boolean(),
-
-    allergiesDetails: z.string().optional(),
-
-    anesthesiaHistoryFlag: z.boolean(),
-
-    anesthesiaComplications: z.string().optional(),
-
-    medicationsFlag: z.boolean(),
-
-    medicationsDetails: z.string().optional(),
-
-    previousDiseases: z.string().optional(),
-
-    currentDisease: z.string().optional(),
+    notes:   z.string().optional(),
 
     dateOfBirth: z
         .string()
@@ -56,40 +45,24 @@ export const patientSchema = z.object({
             "Unesite datum u formatu 01.01.2000"
         ),
 
-    notes: z.string().optional(),
+    // ANAMNESIS
+    allergiesFlag: z.boolean(),
+    allergiesDetails: z.string().optional(),
+    anesthesiaHistoryFlag: z.boolean(),
+    anesthesiaComplications: z.string().optional(),
+    medicationsFlag: z.boolean(),
+    medicationsDetails: z.string().optional(),
+    previousDiseases: z.string().optional(),
+    currentDisease: z.string().optional(),
+
 })
     .refine(
-        (data) => {
-            if (
-                data.allergiesFlag &&
-                !data.allergiesDetails?.trim()
-            ) {
-                return false;
-            }
-
-            return true;
-        },
-        {
-            path: ["allergiesDetails"],
-            message: "Unesite alergiju",
-        }
+        (data) => !(data.allergiesFlag && !data.allergiesDetails?.trim()),
+        { path: ["allergiesDetails"], message: "Unesite detalje alergije" }
     )
     .refine(
-        (data) => {
-            if (
-                data.medicationsFlag &&
-                !data.medicationsDetails?.trim()
-            ) {
-                return false;
-            }
-
-            return true;
-        },
-        {
-            path: ["medicationsDetails"],
-            message: "Unesite lijekove koje koristite",
-        }
+        (data) => !(data.medicationsFlag && !data.medicationsDetails?.trim()),
+        { path: ["medicationsDetails"], message: "Unesite lijekove koje koristite" }
     );
 
-export type PatientFormData =
-    z.infer<typeof patientSchema>;
+export type PatientFormData = z.infer<typeof patientSchema>;

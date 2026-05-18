@@ -34,6 +34,7 @@ const anamnesisFields = z.object({
 const createPatientInput = z
     .object({
         fullName:         z.string().min(2).trim(),
+        email:            z.string().email().optional().or(z.literal("")),
         dateOfBirth:      z.string().regex(/^\d{2}\.\d{2}\.\d{4}$/),
         jmb:              z.string().length(13),
         sex:              z.enum(["M", "F"]).optional(),
@@ -41,6 +42,7 @@ const createPatientInput = z
         phone:            z.string().trim().optional(),
         employmentStatus: z.string().trim().optional(),
         occupation:       z.string().trim().optional(),
+        notes:            z.string().optional(),
     })
     .merge(anamnesisFields);
 
@@ -55,7 +57,6 @@ const listPatientsInput = z.object({
     sortBy:  z.enum(["fullName", "createdAt", "dateOfBirth"]).default("fullName"),
     sortDir: z.enum(["asc", "desc"]).default("asc"),
 });
-
 
 // patientsRouter — svi endpointi vezani za pacijente
 export const patientsRouter = router({
@@ -78,7 +79,7 @@ export const patientsRouter = router({
                 ...patientData
             } = input;
 
-            // Provjeri da pacijent sa istim JMB-om ne postoji, jer je JMB jedinstven
+            // Provjeri da pacijent sa istim JMB-om ne postoji
             const existing = await prisma.patient.findUnique({
                 where: { jmb: patientData.jmb },
                 select: { id: true },
@@ -94,6 +95,9 @@ export const patientsRouter = router({
             const patient = await prisma.patient.create({
                 data: {
                     ...patientData,
+                    // Prazni string za email/notes konvertujemo u null za bazu
+                    email: patientData.email || null,
+                    notes: patientData.notes || null,
                     dateOfBirth: parseDateOfBirth(dateOfBirth),
                     anamnesis: {
                         create: {
@@ -126,9 +130,9 @@ export const patientsRouter = router({
             const patient = await prisma.patient.findUnique({
                 where: { id: input.id },
                 include: {
-                    anamnesis:     true,
-                    appointments:  { orderBy: { startTime: "desc" }, take: 10 },
-                    treatments:    { orderBy: { treatmentDate: "desc" }, take: 10 },
+                    anamnesis:      true,
+                    appointments:   { orderBy: { startTime: "desc" }, take: 10 },
+                    treatments:     { orderBy: { treatmentDate: "desc" }, take: 10 },
                     treatmentPlans: {
                         orderBy: { createdAt: "desc" },
                         include: { items: true },
@@ -182,6 +186,7 @@ export const patientsRouter = router({
                         dateOfBirth: true,
                         jmb:         true,
                         phone:       true,
+                        email:       true,
                         sex:         true,
                         createdAt:   true,
                     },
@@ -249,7 +254,7 @@ export const patientsRouter = router({
                 }
             }
 
-            // Pripremi podatke za anamnezu — samo polja koja su promijenjena
+            // Pripremi podatke za anamnezu — samo polja koja su prisutna
             const anamnesisData = {
                 ...(allergiesFlag           !== undefined && { allergiesFlag }),
                 ...(allergiesDetails        !== undefined && { allergiesDetails }),
@@ -265,8 +270,11 @@ export const patientsRouter = router({
                 where: { id },
                 data: {
                     ...rest,
-                    ...(jmb          && { jmb }),
-                    ...(dateOfBirth  && { dateOfBirth: parseDateOfBirth(dateOfBirth) }),
+                    // Prazni string za email/notes konvertujemo u null za bazu
+                    ...(rest.email !== undefined && { email: rest.email || null }),
+                    ...(rest.notes !== undefined && { notes: rest.notes || null }),
+                    ...(jmb         && { jmb }),
+                    ...(dateOfBirth && { dateOfBirth: parseDateOfBirth(dateOfBirth) }),
                     ...(Object.keys(anamnesisData).length > 0 && {
                         anamnesis: {
                             upsert: {
@@ -282,10 +290,10 @@ export const patientsRouter = router({
             return { success: true as const, patient: updated };
         }),
 
-
     /** patients.delete
-     * Briše pacijenta i sve povezane podatke (anamneza, pregledi, tretmani, planovi, računi).
-     * Samo MASTER korisnici imaju pravo brisanja pacijenata
+     *
+     * Briše pacijenta i sve povezane podatke.
+     * Samo MASTER korisnici imaju pravo brisanja pacijenata.
      */
     delete: masterOnlyProcedure
         .input(z.object({ id: z.string().cuid() }))
