@@ -2,35 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
 import { PatientForm } from "~/app/_components/patient/patient-form";
 import type { PatientFormData } from "~/lib/validators/patient";
+import { api } from "~/trpc/react";
 
 export default function CreatePatientPage() {
     const router = useRouter();
+    const [error, setError] = useState<string | null>(null);
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleCreatePatient = async (
-        data: PatientFormData
-    ) => {
-        try {
-            setIsLoading(true);
-
-            console.log("CREATE PATIENT:", data);
-
-            alert("Pacijent uspješno kreiran!");
-
-            await new Promise((resolve) =>
-                setTimeout(resolve, 1000)
-            );
-
+    const createPatient = api.patients.create.useMutation({
+        onSuccess: () => {
             router.push("/dashboard/patients");
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
+            router.refresh();
+        },
+        onError: (err) => {
+            setError(err.message);
+        },
+    });
+
+    const handleSubmit = (data: PatientFormData) => {
+        setError(null);
+        createPatient.mutate(data);
     };
 
     return (
@@ -41,13 +33,18 @@ export default function CreatePatientPage() {
             >
                 ← Nazad
             </button>
-            <h1 className="mb-8 text-3xl font-semibold">
-                Kreiraj pacijenta
-            </h1>
+
+            <h1 className="mb-8 text-3xl font-semibold">Kreiraj pacijenta</h1>
+
+            {error && (
+                <div className="mb-6 rounded-xl border border-red-100 bg-red-50 p-4">
+                    <p className="text-sm font-medium text-red-600">{error}</p>
+                </div>
+            )}
 
             <PatientForm
-                onSubmit={handleCreatePatient}
-                isLoading={isLoading}
+                onSubmit={handleSubmit}
+                isLoading={createPatient.isPending}
             />
         </div>
     );
