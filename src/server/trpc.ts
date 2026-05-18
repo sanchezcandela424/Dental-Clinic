@@ -1,5 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { getServerSession } from "next-auth";
+import superjson from "superjson";
 import { authOptions } from "~/lib/auth";
 
 export type UserRole = "MASTER" | "STAFF";
@@ -32,7 +33,9 @@ export async function createTRPCContext(opts: { req: Request }): Promise<Context
     };
 }
 
-const t = initTRPC.context<Context>().create();
+const t = initTRPC.context<Context>().create({
+    transformer: superjson,
+});
 
 export const router = t.router;
 export const publicProcedure = t.procedure;

@@ -58,12 +58,14 @@ export default function EditPatientPage() {
 
     const patientFormData: PatientFormData = {
         fullName:                data.fullName,
+        email:                   data.email ?? "",
         phone:                   data.phone ?? "",
         jmb:                     data.jmb,
         sex:                     (data.sex as "M" | "F") ?? undefined,
         address:                 data.address ?? "",
         occupation:              data.occupation ?? "",
         employmentStatus:        data.employmentStatus ?? "",
+        notes:                   data.notes ?? "",
         dateOfBirth:             formatDateForForm(data.dateOfBirth),
 
         allergiesFlag:           data.anamnesis?.allergiesFlag ?? false,
