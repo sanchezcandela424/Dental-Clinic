@@ -1,4 +1,6 @@
+// @ts-ignore
 import { FlatCompat } from "@eslint/eslintrc";
+// @ts-ignore
 import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({
