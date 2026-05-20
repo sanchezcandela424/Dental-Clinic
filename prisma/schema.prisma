@@ -39,8 +39,10 @@ model Patient {
   dateOfBirth      DateTime
   sex              String?
   address          String?
+  email            String?
   phone            String?
   jmb              String   @unique
+  notes            String?  @db.Text
   employmentStatus String?
   occupation       String?
   createdAt        DateTime @default(now())
