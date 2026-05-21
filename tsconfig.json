@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     /* Base Options: */
+    "types": ["jest", "node"],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "es2022",

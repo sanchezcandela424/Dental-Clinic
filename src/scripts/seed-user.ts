@@ -1,9 +1,8 @@
-
 /**
- * Seed script — creates an initial MASTER user.
+ * Seed script — creates initial MASTER and STAFF users.
  *
  * Run with:
- *   npx tsx src/scripts/seed-user.ts
+ * npx tsx src/scripts/seed-user.ts
  *
  * Safe to run multiple times: uses upsert so it won't duplicate records.
  */
@@ -27,6 +26,7 @@ async function main() {
             isActive: true,
         },
     });
+    console.log(`✅ Master user ready: ${master.email}`);
 
     // ── STAFF user ─────────────────────────────────────────────────────────────
     const staffHash = await hashPassword("staff123");
@@ -41,11 +41,19 @@ async function main() {
             isActive: true,
         },
     });
+    console.log(`✅ Staff user ready: ${staff.email}`);
 }
 
-main()
-    .catch((err) => {
-        console.error("Seed failed:", err);
+async function run() {
+    try {
+        await main();
+        console.log("🚀 Seeding completed successfully!");
+    } catch (err) {
+        console.error("❌ Seed failed:", err);
         process.exit(1);
-    })
-    .finally(() => prisma.$disconnect());
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
+run();
