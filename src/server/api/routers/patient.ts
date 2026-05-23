@@ -2,21 +2,22 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const patientRouter = createTRPCRouter({
-  // Arama ve Sayfalama Yapan Sorgu
+  // Query to handle advanced search, server-side pagination, and dynamic sorting
   getPaginated: protectedProcedure
     .input(
       z.object({
-        search: z.string().optional(), // Arama kelimesi (opsiyonel)
-        page: z.number().int().min(1).default(1), // Kaçıncı sayfa
-        limit: z.number().int().min(1).max(100).default(10), // Sayfa başına kaç hasta
+        search: z.string().optional(),
+        page: z.number().int().min(1).default(1),
+        limit: z.number().int().min(1).max(100).default(10),
+        sortBy: z.enum(["fullName", "createdAt", "dateOfBirth"]).default("createdAt"),
+        sortOrder: z.enum(["asc", "desc"]).default("desc"),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { search, page, limit } = input;
+      const { search, page, limit, sortBy, sortOrder } = input;
       const skip = (page - 1) * limit;
 
-      // 1. Arama Koşullarını Dinamik Olarak Oluştur
-      // Kullanıcı bir şey yazdıysa; fullName, jmb veya phone alanlarında büyük/küçük harf duyarsız arama yapar.
+      // Build dynamic case-insensitive search filter for fullName, jmb, and phone
       const whereClause = search
         ? {
             OR: [
@@ -27,18 +28,18 @@ export const patientRouter = createTRPCRouter({
           }
         : {};
 
-      // 2. Performans için Toplam Sayıyı ve Hastaları Aynı Anda Veritabanından Çek
+      // Execute both count and data queries concurrently for better Neon performance
       const [totalCount, patients] = await Promise.all([
         ctx.db.patient.count({ where: whereClause }),
         ctx.db.patient.findMany({
           where: whereClause,
           skip: skip,
           take: limit,
-          orderBy: { createdAt: "desc" }, // En son kayıt olan hasta en üstte görünür
+          orderBy: { [sortBy]: sortOrder },
         }),
       ]);
 
-      // 3. Sayfalama Sayılarını Hesapla
+      // Calculate total number of pages
       const totalPages = Math.ceil(totalCount / limit);
 
       return {
