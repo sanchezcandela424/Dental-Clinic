@@ -1,29 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useDebounce } from "~/hooks/use-debounce";
-import { api } from "~/trpc/react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
+
+import { useDebounce } from "~/hooks/use-debounce";
+import { api } from "~/trpc/react";
 
 export default function PatientsPage() {
     const { data: session } = useSession();
     const isMaster = session?.user?.role === "MASTER";
 
-    const [search, setSearch]   = useState("");
-    const [page, setPage]       = useState(1);
+    const [search, setSearch] = useState("");
+    const [page, setPage] = useState(1);
     const [confirmId, setConfirmId] = useState<string | null>(null);
 
     const debouncedSearch = useDebounce(search, 300);
-    const isSearching     = search !== debouncedSearch;
+    const isSearching = search !== debouncedSearch;
 
     const { data, isLoading, refetch } = api.patients.list.useQuery({
-        search:  debouncedSearch || undefined,
+        search: debouncedSearch || undefined,
         page,
         perPage: 20,
-        sortBy:  "fullName",
+        sortBy: "fullName",
         sortDir: "asc",
     });
 
@@ -39,78 +39,22 @@ export default function PatientsPage() {
         setPage(1);
     };
 
-import {
-    Eye,
-    Pencil,
-    Trash2,
-} from "lucide-react";
-
-export default function PatientsPage() {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-
-    // Read parameters from URL to maintain single source of truth
-    const urlSearch = searchParams.get("search") ?? "";
-    const urlPage = Number(searchParams.get("page") ?? "1");
-    const urlSortBy = searchParams.get("sortBy") ?? "createdAt";
-    const urlSortOrder = searchParams.get("sortOrder") ?? "desc";
-
-    // Local state for instant and fluid typing feedback
-    const [searchInput, setSearchInput] = useState(urlSearch);
-    const debouncedSearch = useDebounce(searchInput, 500);
-
-    // Fetch real-time synchronized data from the tRPC backend
-    const { data, isLoading } = api.patient.getPaginated.useQuery(
-        {
-            search: debouncedSearch,
-            page: urlPage,
-            limit: 8,
-            sortBy: urlSortBy as "fullName" | "createdAt" | "dateOfBirth",
-            sortOrder: urlSortOrder as "asc" | "desc",
-        },
-        {
-            placeholderData: (previousData) => previousData,
-        }
-    );
-
-    // Helper function to safely update URL search parameters
-    const updateQueryParams = (params: Record<string, string | null>) => {
-        const current = new URLSearchParams(Array.from(searchParams.entries()));
-        
-        Object.entries(params).forEach(([key, value]) => {
-            if (value === null || value === "") {
-                current.delete(key);
-            } else {
-                current.set(key, value);
-            }
-        });
-
-        const searchStr = current.toString();
-        const query = searchStr ? `?${searchStr}` : "";
-        router.push(`${pathname}${query}`);
-    };
-
-    // Update URL query parameters whenever search input settles
-    useEffect(() => {
-        updateQueryParams({ search: debouncedSearch, page: "1" });
-    }, [debouncedSearch]);
-
-    const isSearching = searchInput !== debouncedSearch;
-
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="mx-auto max-w-6xl space-y-6">
 
-                {/* HEADER SECTION */}
+                {/* HEADER */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-semibold">Baza Pacijenata</h1>
+                        <h1 className="text-3xl font-semibold">
+                            Baza Pacijenata
+                        </h1>
+
                         <p className="mt-1 text-gray-500">
                             Pregled svih registrovanih pacijenata.
                         </p>
-                        <p className="mt-1 text-gray-500">Pregled svih registrovanih pacijenata.</p>
                     </div>
+
                     <Link
                         href="/dashboard/patients/create"
                         className="rounded-xl bg-blue-600 px-5 py-3 text-white transition hover:bg-blue-700"
@@ -127,29 +71,38 @@ export default function PatientsPage() {
                         placeholder="Pretraži po imenu, JMB-u ili telefonu..."
                         className="w-full rounded-xl border border-gray-200 p-3 outline-none transition focus:ring-2 focus:ring-blue-400"
                     />
+
                     {isSearching && (
-                        <p className="mt-2 text-sm text-gray-400">Pretraga...</p>
+                        <p className="mt-2 text-sm text-gray-400">
+                            Pretraga...
+                        </p>
                     )}
                 </div>
 
-                {/* CONFIRM DELETE MODAL */}
+                {/* DELETE MODAL */}
                 {confirmId && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
                         <div className="rounded-2xl bg-white p-8 shadow-xl">
                             <p className="mb-6 text-lg font-medium">
                                 Jeste li sigurni da želite obrisati ovog pacijenta?
                             </p>
+
                             <div className="flex gap-4">
                                 <button
-                                    onClick={() => deletePatient.mutate({ id: confirmId })}
+                                    onClick={() =>
+                                        deletePatient.mutate({ id: confirmId })
+                                    }
                                     disabled={deletePatient.isPending}
-                                    className="rounded-xl bg-red-600 px-6 py-2 text-white hover:bg-red-700 disabled:opacity-50"
+                                    className="rounded-xl bg-red-600 px-6 py-2 text-white transition hover:bg-red-700 disabled:opacity-50"
                                 >
-                                    {deletePatient.isPending ? "Brisanje..." : "Obriši"}
+                                    {deletePatient.isPending
+                                        ? "Brisanje..."
+                                        : "Obriši"}
                                 </button>
+
                                 <button
                                     onClick={() => setConfirmId(null)}
-                                    className="rounded-xl border border-gray-200 px-6 py-2 text-gray-600 hover:bg-gray-50"
+                                    className="rounded-xl border border-gray-200 px-6 py-2 text-gray-600 transition hover:bg-gray-50"
                                 >
                                     Otkaži
                                 </button>
@@ -169,130 +122,83 @@ export default function PatientsPage() {
                             <th className="px-6 py-4">Akcije</th>
                         </tr>
                         </thead>
+
                         <tbody>
                         {isLoading && (
                             <tr>
-                                <td colSpan={4} className="px-6 py-10 text-center text-gray-400">
+                                <td
+                                    colSpan={4}
+                                    className="px-6 py-10 text-center text-gray-400"
+                                >
                                     Učitavanje...
                                 </td>
                             </tr>
                         )}
 
-                        {!isLoading && data?.patients.map((patient) => (
-                            <tr
-                                key={patient.id}
-                                className="border-b last:border-0 transition hover:bg-gray-50"
-                            >
-                                <td className="px-6 py-4 font-medium">{patient.fullName}</td>
-                                <td className="px-6 py-4 text-gray-600">{patient.jmb}</td>
-                                <td className="px-6 py-4 text-gray-600">{patient.phone ?? "—"}</td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-4">
+                        {!isLoading &&
+                            data?.patients.map((patient) => (
+                                <tr
+                                    key={patient.id}
+                                    className="border-b transition hover:bg-gray-50 last:border-0"
+                                >
+                                    <td className="px-6 py-4 font-medium">
+                                        {patient.fullName}
+                                    </td>
 
-                                        <Link
-                                            href={`/dashboard/patients/${patient.id}`}
-                                            className="text-blue-600 transition hover:text-blue-800"
-                                            title="Profil"
-                                        >
-                                            <Eye size={18} />
-                                        </Link>
+                                    <td className="px-6 py-4 text-gray-600">
+                                        {patient.jmb}
+                                    </td>
 
-                                        <Link
-                                            href={`/dashboard/patients/${patient.id}/edit`}
-                                            className="text-gray-600 transition hover:text-gray-800"
-                                            title="Uredi"
-                                        >
-                                            <Pencil size={18} />
-                                        </Link>
+                                    <td className="px-6 py-4 text-gray-600">
+                                        {patient.phone ?? "—"}
+                                    </td>
 
-                                        {isMaster && (
-                                            <button
-                                                onClick={() => setConfirmId(patient.id)}
-                {/* CONTROLS AREA: SEARCH BAR AND SORTING OPTIONS */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 rounded-3xl bg-white p-5 shadow-sm">
-                    {/* Search Field */}
-                    <div className="sm:col-span-2">
-                        <input
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            placeholder="Pretraži pacijente (Ime, JMB ili Telefon)..."
-                            className="w-full rounded-xl border border-gray-200 p-3 outline-none transition focus:ring-2 focus:ring-blue-400"
-                        />
-                    </div>
-
-                    {/* Sorting Dropdown Menu */}
-                    <div>
-                        <select
-                            value={`${urlSortBy}-${urlSortOrder}`}
-                            onChange={(e) => {
-                                const [sortBy, sortOrder] = e.target.value.split("-");
-                                updateQueryParams({ sortBy, sortOrder, page: "1" });
-                            }}
-                            className="w-full rounded-xl border border-gray-200 p-3 outline-none bg-white transition focus:ring-2 focus:ring-blue-400"
-                        >
-                            <option value="createdAt-desc">Najnoviji pacijenti</option>
-                            <option value="createdAt-asc">Najstariji pacijenti</option>
-                            <option value="fullName-asc">Ime (A-Z)</option>
-                            <option value="fullName-desc">Ime (Z-A)</option>
-                        </select>
-                    </div>
-
-                    {/* Loading State Feedback */}
-                    {(isSearching || isLoading) && (
-                        <p className="sm:col-span-3 text-sm text-gray-500 animate-pulse">
-                            Pretraga u toku...
-                        </p>
-                    )}
-                </div>
-
-                {/* PATIENTS DATA TABLE */}
-                <div className="overflow-hidden rounded-3xl bg-white shadow-sm">
-                    <table className="w-full">
-                        <thead className="border-b bg-gray-50">
-                            <tr className="text-left text-sm text-gray-500">
-                                <th className="px-6 py-4">Pacijent</th>
-                                <th className="px-6 py-4">JMB</th>
-                                <th className="px-6 py-4">Telefon</th>
-                                <th className="px-6 py-4">Akcije</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {/* Render active list of patients retrieved from database */}
-                            {!isLoading && data?.patients.map((patient) => (
-                                <tr key={patient.id} className="border-b last:border-0 transition hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium">{patient.fullName}</td>
-                                    <td className="px-6 py-4 text-gray-600">{patient.jmb}</td>
-                                    <td className="px-6 py-4 text-gray-600">{patient.phone || "Nema telefona"}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
-                                            {/* Action links */}
-                                            <Link href={`/dashboard/patients/${patient.id}`} className="text-blue-600 transition hover:text-blue-800" title="Profil">
+
+                                            <Link
+                                                href={`/dashboard/patients/${patient.id}`}
+                                                className="text-blue-600 transition hover:text-blue-800"
+                                                title="Profil"
+                                            >
                                                 <Eye size={18} />
                                             </Link>
-                                            <Link href={`/dashboard/patients/${patient.id}/edit`} className="text-gray-600 transition hover:text-gray-800" title="Uredi">
+
+                                            <Link
+                                                href={`/dashboard/patients/${patient.id}/edit`}
+                                                className="text-gray-600 transition hover:text-gray-800"
+                                                title="Uredi"
+                                            >
                                                 <Pencil size={18} />
                                             </Link>
-                                            <button
-                                                onClick={() => alert("Brisanje pacijenta će biti implementirano u SCRUM-56.")}
-                                                className="text-red-500 transition hover:text-red-700"
-                                                title="Obriši"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        )}
 
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                                            {isMaster && (
+                                                <button
+                                                    onClick={() =>
+                                                        setConfirmId(patient.id)
+                                                    }
+                                                    className="text-red-500 transition hover:text-red-700"
+                                                    title="Obriši"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
 
-                        {!isLoading && data?.patients.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
-                                    Nema pronađenih pacijenata.
-                                </td>
-                            </tr>
-                        )}
+                        {!isLoading &&
+                            data?.patients.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={4}
+                                        className="px-6 py-10 text-center text-gray-500"
+                                    >
+                                        Nema pronađenih pacijenata.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
 
@@ -302,21 +208,25 @@ export default function PatientsPage() {
                             <p className="text-sm text-gray-500">
                                 Ukupno: {data.pagination.total} pacijenata
                             </p>
+
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => setPage((p) => p - 1)}
                                     disabled={!data.pagination.hasPrev}
-                                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-40 hover:bg-gray-50"
+                                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm transition hover:bg-gray-50 disabled:opacity-40"
                                 >
                                     ← Prethodna
                                 </button>
+
                                 <span className="flex items-center px-3 text-sm text-gray-600">
-                  {data.pagination.page} / {data.pagination.totalPages}
-                </span>
+                                    {data.pagination.page} /{" "}
+                                    {data.pagination.totalPages}
+                                </span>
+
                                 <button
                                     onClick={() => setPage((p) => p + 1)}
                                     disabled={!data.pagination.hasNext}
-                                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm disabled:opacity-40 hover:bg-gray-50"
+                                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm transition hover:bg-gray-50 disabled:opacity-40"
                                 >
                                     Sljedeća →
                                 </button>
@@ -324,49 +234,6 @@ export default function PatientsPage() {
                         </div>
                     )}
                 </div>
-
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-
-                            {/* Fallback layout when query results return empty */}
-                            {!isLoading && data?.patients.length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
-                                        Nema pronađenih pacijenata.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* PAGINATION NAVIGATION INTERFACE */}
-                {data?.meta && data.meta.totalPages > 1 && (
-                    <div className="flex items-center justify-between rounded-3xl bg-white p-4 shadow-sm">
-                        <button
-                            onClick={() => updateQueryParams({ page: String(Math.max(urlPage - 1, 1)) })}
-                            disabled={!data.meta.hasPreviousPage}
-                            className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium transition hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-gray-100"
-                        >
-                            ◀ Prethodna
-                        </button>
-
-                        <span className="text-sm text-gray-600 font-medium">
-                            Stranica {data.meta.currentPage} od {data.meta.totalPages}
-                        </span>
-
-                        <button
-                            onClick={() => updateQueryParams({ page: String(Math.min(urlPage + 1, data.meta.totalPages)) })}
-                            disabled={!data.meta.hasNextPage}
-                            className="rounded-xl bg-gray-100 px-4 py-2 text-sm font-medium transition hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-gray-100"
-                        >
-                            Sljedeća ▶
-                        </button>
-                    </div>
-                )}
-
             </div>
         </div>
     );
