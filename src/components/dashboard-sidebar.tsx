@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image"; // Imported to handle optimized and responsive clinic logo
 import {
     LayoutDashboard,
     Users,
@@ -29,8 +30,14 @@ export function DashboardSidebar({
             {/* LOGO */}
             <div className="mb-2 flex flex-col items-center gap-3 px-2">
 
-                <div className="flex h-24 w-36 items-center justify-center">
-                    <SmilingTeethTeam className="h-full w-full" />
+                <div className="relative flex h-24 w-36 items-center justify-center">
+                    <Image 
+                        src="/clinic-logo-v3.png" 
+                        alt="Clinic Official Logo" 
+                        fill
+                        priority
+                        className="object-contain"
+                    />
                 </div>
 
                 <div className="flex flex-col items-center">
@@ -171,79 +178,6 @@ function LockIcon({
             />
 
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-    );
-}
-
-function SmilingTeethTeam({
-                              className,
-                          }: {
-    className?: string;
-}) {
-    return (
-        <svg viewBox="0 0 350 200" className={className}>
-
-            <g transform="translate(5, 30) scale(0.8)">
-                <path
-                    d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z"
-                    fill="white"
-                    stroke="#cbd5e1"
-                    strokeWidth="4"
-                />
-
-                <circle cx="85" cy="70" r="4" fill="#1e293b" />
-                <circle cx="115" cy="70" r="4" fill="#1e293b" />
-
-                <path
-                    d="M85,90 Q100,105 115,90"
-                    fill="none"
-                    stroke="#1e293b"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                />
-            </g>
-
-            <g transform="translate(185, 30) scale(0.8)">
-                <path
-                    d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z"
-                    fill="white"
-                    stroke="#cbd5e1"
-                    strokeWidth="4"
-                />
-
-                <circle cx="85" cy="70" r="4" fill="#1e293b" />
-                <circle cx="115" cy="70" r="4" fill="#1e293b" />
-
-                <path
-                    d="M85,90 Q100,105 115,90"
-                    fill="none"
-                    stroke="#1e293b"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                />
-            </g>
-
-            <g transform="translate(75, 5) scale(1.0)">
-                <path
-                    d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z"
-                    fill="white"
-                    stroke="#3b82f6"
-                    strokeWidth="6"
-                    strokeLinejoin="round"
-                />
-
-                <circle cx="85" cy="70" r="5" fill="#1e293b" />
-                <circle cx="115" cy="70" r="5" fill="#1e293b" />
-
-                <path
-                    d="M80,95 Q100,115 120,95"
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                />
-            </g>
-
         </svg>
     );
 }
