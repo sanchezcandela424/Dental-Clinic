@@ -54,23 +54,26 @@ model Patient {
   visitNotes     VisitNote[]
   treatmentPlans TreatmentPlan[]
   invoices       Invoice[]
+  
+  // Scrum-65: Odontogram İlişkisi
+  odontogramTeeth OdontogramTooth[] 
 }
 
 // 3. Anamnesis Entity
 model Anamnesis {
-  id                      String   @id @default(cuid())
-  patientId               String   @unique // One-to-one relationship
-  patient                 Patient  @relation(fields: [patientId], references: [id])
-  allergiesFlag           Boolean  @default(false)
-  allergiesDetails        String?  @db.Text
-  anesthesiaHistoryFlag   Boolean  @default(false)
+  id                    String   @id @default(cuid())
+  patientId             String   @unique // One-to-one relationship
+  patient               Patient  @relation(fields: [patientId], references: [id])
+  allergiesFlag         Boolean  @default(false)
+  allergiesDetails      String?  @db.Text
+  anesthesiaHistoryFlag Boolean  @default(false)
   anesthesiaComplications String?  @db.Text
-  medicationsFlag         Boolean  @default(false)
-  medicationsDetails      String?  @db.Text
-  previousDiseases        String?  @db.Text
-  currentDisease          String?  @db.Text
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  medicationsFlag       Boolean  @default(false)
+  medicationsDetails    String?  @db.Text
+  previousDiseases      String?  @db.Text
+  currentDisease        String?  @db.Text
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
 // 4. Appointment Entity
@@ -120,12 +123,12 @@ enum TreatmentStatus {
 
 // 6. VisitNote Entity
 model VisitNote {
-  id        String   @id @default(cuid())
-  patientId String
-  patient   Patient  @relation(fields: [patientId], references: [id])
-  content   String   @db.Text
-  noteDate  DateTime @default(now())
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  content     String   @db.Text
+  noteDate    DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   appointmentId String?
   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
@@ -207,4 +210,18 @@ model PriceListItem {
   name      String
   price     Float
   createdAt DateTime @default(now())
+}
+
+// 12. OdontogramTooth Entity (Scrum-65)
+model OdontogramTooth {
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  toothNumber Int      // FDI standart numarası (ör: 18, 21, 44)
+  condition   String   // Dişin durumu (ör: healthy, caries, missing, filled)
+  notes       String?  @db.Text // Özel klinik notlar
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([patientId, toothNumber]) // Bir hastanın her bir dişi (FDI numarası) za samo jedan aktivan zapis.
 }

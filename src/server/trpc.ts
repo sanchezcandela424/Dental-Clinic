@@ -2,6 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import { getServerSession } from "next-auth";
 import superjson from "superjson";
 import { authOptions } from "~/lib/auth";
+import { prisma as db } from "../lib/prisma";// Veritabanı bağlantını buraya import ediyoruz
 
 export type UserRole = "MASTER" | "STAFF";
 
@@ -11,25 +12,19 @@ export type Context = {
         email: string;
         role: UserRole;
     } | null;
+    db: typeof db; // Veritabanı artık context'in bir parçası
 };
 
-/**
- * Kreira tRPC context za svaki request.
- * Čita NextAuth sesiju i stavlja korisnika u ctx.user.
- */
 export async function createTRPCContext(opts: { req: Request }): Promise<Context> {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
-        return { user: null };
-    }
-
     return {
-        user: {
-            id:    session.user.id,
+        user: session?.user ? {
+            id: session.user.id,
             email: session.user.email ?? "",
-            role:  session.user.role,
-        },
+            role: session.user.role,
+        } : null,
+        db, // Artık her procedure (işlem) veritabanına erişebilir
     };
 }
 
@@ -47,7 +42,7 @@ const isAuthed = t.middleware(({ ctx, next }) => {
             message: "You must be logged in",
         });
     }
-    return next({ ctx: { user: ctx.user } });
+    return next({ ctx: { ...ctx, user: ctx.user } });
 });
 
 const isMaster = t.middleware(({ ctx, next }) => {
