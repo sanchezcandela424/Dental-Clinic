@@ -7,24 +7,24 @@ test.describe('CityDent Login Flow', () => {
   });
 
   test('Successful Login as Master, Cookie Verification, and Logout', async ({ page }) => {
-    // 1. Click the role button to reveal the form
+    
     await page.locator('text=Master Ulaz').click();
 
-    // 2. Fill in Sanjin's official credentials
+    
     await page.locator('input[type="email"]').fill('admin@citydent.com');
     await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /Pristupi panelu/i }).click();
 
-    // 3. Verify redirect to dashboard
+    
     await expect(page).toHaveURL(/.*dashboard/, { timeout: 15000 });
 
-    // 4. Verify citydent_token cookie exists and has HttpOnly flag
+    
     const cookies = await page.context().cookies();
     const tokenCookie = cookies.find(c => c.name === 'citydent_token');
     expect(tokenCookie).toBeTruthy();
     expect(tokenCookie?.httpOnly).toBe(true);
 
-    // 5. Logout
+    
     const logoutButton = page.locator('text=Odjava').or(page.locator('text=Logout'));
     if (await logoutButton.isVisible()) {
       await logoutButton.click();
@@ -49,13 +49,13 @@ test.describe('CityDent Login Flow', () => {
   test('Empty email or password fields should prevent form submission', async ({ page }) => {
     await page.locator('text=Master Ulaz').click();
 
-    // Leave email empty, fill password
+    
     await page.locator('input[type="password"]').fill('password123');
     await page.getByRole('button', { name: /Pristupi panelu/i }).click();
-    // Expect the input to still be visible (meaning it didn't log in)
+    
     await expect(page.locator('input[type="email"]')).toBeVisible(); 
 
-    // Clear password, fill email, leave password empty
+    
     await page.locator('input[type="password"]').fill('');
     await page.locator('input[type="email"]').fill('admin@citydent.com');
     await page.getByRole('button', { name: /Pristupi panelu/i }).click();

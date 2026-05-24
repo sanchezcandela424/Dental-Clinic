@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('SCRUM-41: UI RBAC Role Enforcement', () => {
 
   test.beforeEach(async ({ page }) => {
-    // THE FIX: Clear any lingering sessions from login.spec.ts so we don't skip the login page!
+    
     await page.context().clearCookies();
     await page.goto('http://localhost:3000');
   });
