@@ -4,6 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 
+// Yüzey (Surface) tipi tanımı
+export type Surface = "TOP" | "BOTTOM" | "LEFT" | "RIGHT" | "CENTER" | null;
+
 export default function OdontogramPage() {
   const params = useParams();
   const router = useRouter();
@@ -15,7 +18,7 @@ export default function OdontogramPage() {
   const saveMutation = api.odontogram.save.useMutation({
     onSuccess: () => {
       utils.odontogram.get.invalidate({ patientId });
-      alert("Status zuba uspješno spremljen!");
+      alert("Status zuba i površine uspješno spremljen!");
     },
   });
 
@@ -27,11 +30,13 @@ export default function OdontogramPage() {
 
   // State yönetimi
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
+  const [selectedSurface, setSelectedSurface] = useState<Surface>(null); // Yüzey state'i
   const [condition, setCondition] = useState("healthy");
   const [notes, setNotes] = useState("");
 
-  // Seçili dişin verilerini veritabanından çekip forma doldur
+  // Seçili diş değiştiğinde yüzeyi temizle ve verileri çek
   useEffect(() => {
+    setSelectedSurface(null); // Diş değişince yüzey seçimini sıfırla
     if (selectedTooth && teethData) {
       const tooth = teethData.find((t) => t.toothNumber === selectedTooth);
       setCondition(tooth?.condition || "healthy");
@@ -49,6 +54,8 @@ export default function OdontogramPage() {
         toothNumber: selectedTooth,
         condition,
         notes,
+        // Eger backend'e surface da göndereceksen buraya ekleyebilirsin:
+        // surface: selectedSurface 
       });
     }
   };
@@ -63,7 +70,7 @@ export default function OdontogramPage() {
           >
             ← Nazad na profil pacijenta
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">Odontogram Pacijenta (Scrum-65)</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Odontogram Pacijenta </h1>
           <p className="text-xs text-gray-500">ID Pacijenta: {patientId}</p>
         </div>
         <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
@@ -102,6 +109,29 @@ export default function OdontogramPage() {
                 <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
                   <p className="text-sm text-blue-800 font-semibold">Odabrani Zub: Br. {selectedTooth}</p>
                 </div>
+                
+                {/* Yüzey Seçimi Bölümü */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Odaberite Površinu (Opcionalno)</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {(["TOP", "BOTTOM", "LEFT", "RIGHT", "CENTER"] as Surface[]).map((surf) => {
+                      const labels: Record<string, string> = { TOP: "Gore", BOTTOM: "Dolje", LEFT: "Lijevo", RIGHT: "Desno", CENTER: "Centar" };
+                      const isActive = selectedSurface === surf;
+                      return (
+                         <button
+                           key={surf}
+                           onClick={() => setSelectedSurface(surf)}
+                           className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                             isActive ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                           }`}
+                         >
+                           {labels[surf as string]}
+                         </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <select 
                   value={condition} 
                   onChange={(e) => setCondition(e.target.value)}
