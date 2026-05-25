@@ -5,6 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { Tooth, Surface } from "./Tooth";
 
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+} from "@/components/ui/sheet";
+
 const surfaceTranslations: Record<string, string> = {
   TOP: "Gore", BOTTOM: "Dolje", LEFT: "Lijevo", RIGHT: "Desno", CENTER: "Centar",
 };
@@ -40,12 +47,14 @@ export default function OdontogramPage() {
   const [selectedSurface, setSelectedSurface] = useState<Surface>(null);
   const [condition, setCondition] = useState("healthy");
   const [notes, setNotes] = useState("");
+    const [timeline, setTimeline] = useState<any[]>([]);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const handleToothSelect = (toothNumber: number, surface: Surface) => {
-    setSelectedTooth(toothNumber);
-    setSelectedSurface(surface);
-  };
-
+    const handleToothSelect = (toothNumber: number, surface: Surface) => {
+        setSelectedTooth(toothNumber);
+        setSelectedSurface(surface);
+        setIsSheetOpen(true);
+    };
   useEffect(() => {
     if (selectedTooth && teethData) {
       const tooth = teethData.find((t) => t.toothNumber === selectedTooth);
@@ -56,6 +65,18 @@ export default function OdontogramPage() {
       setNotes("");
     }
   }, [selectedTooth, teethData]);
+
+    useEffect(() => {
+        if (selectedTooth && teethData) {
+            const history = teethData.filter(
+                (t: any) => t.toothNumber === selectedTooth
+            );
+
+            setTimeline(history);
+        } else {
+            setTimeline([]);
+        }
+    }, [selectedTooth, teethData]);
 
   const handleSave = () => {
     if (selectedTooth) {
@@ -118,67 +139,151 @@ export default function OdontogramPage() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col justify-between min-h-[450px]">
-          <div>
-            <h3 className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Dijagnoza i Plan Tretmana</h3>
-            {selectedTooth ? (
-              <div className="space-y-4">
-                <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
-                  <p className="text-sm text-blue-800 font-semibold">Odabrani Zub: Br. {selectedTooth}</p>
-                  <p className="text-sm text-blue-600 mt-1">
-                    Površina: <strong>{selectedSurface ? surfaceTranslations[selectedSurface] : "Cijeli zub"}</strong>
-                  </p>
-                </div>
-                
-                <select value={condition} onChange={(e) => setCondition(e.target.value)} className="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white text-gray-700">
-                  <option value="healthy">Zdrav zub (Healthy)</option>
-                  <option value="caries">Karijes (Caries)</option>
-                  <option value="missing">Nedostaje zub (Missing)</option>
-                  <option value="filled">Plomba (Filled)</option>
-                  <option value="bridge">Most (Bridge)</option>
-                  <option value="implant">Implantat (Implant)</option>
-                </select>
-                <textarea rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Unesite zapažanja..." className="w-full border border-gray-300 rounded-lg p-2 text-sm text-gray-700" />
-                
-                <button onClick={handleSave} disabled={saveMutation.isPending} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-sm">
-                  {saveMutation.isPending ? "Spremanje..." : "Spremi Status Zuba"}
-                </button>
-              </div>
-            ) : (
-              <p className="text-center py-12 text-gray-400 text-sm">Odaberite zub sa šeme.</p>
-            )}
-          </div>
+          <Sheet
+              open={isSheetOpen}
+              onOpenChange={(open) => {
+                  setIsSheetOpen(open);
 
-          <div className="mt-8 pt-4 border-t border-gray-100">
-            <h4 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-3">Legenda Statusa</h4>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-2.5 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-white border border-gray-300 inline-block shadow-sm"></span>
-                <span className="text-gray-600 font-medium">Zdrav zub</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#ef4444] inline-block shadow-sm"></span>
-                <span className="text-gray-600 font-medium">Karijes</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#10b981] inline-block shadow-sm"></span>
-                <span className="text-gray-600 font-medium">Plomba</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#475569] inline-block shadow-sm"></span>
-                <span className="text-gray-600 font-medium">Nedostaje zub</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#8b5cf6] inline-block shadow-sm"></span>
-                <span className="text-gray-600 font-medium">Most</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#f59e0b] inline-block shadow-sm"></span>
-                <span className="text-gray-600 font-medium">Implantat</span>
-              </div>
-            </div>
-          </div>
-        </div>
+                  if (!open) {
+                      setSelectedTooth(null);
+                      setSelectedSurface(null);
+                  }
+              }}
+          >
+              <SheetContent
+                  className="w-[400px] sm:w-[540px] overflow-y-auto"
+                  onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                  <SheetHeader>
+                      <SheetTitle>Dijagnoza i Plan Tretmana</SheetTitle>
+                  </SheetHeader>
+
+                  <div className="mt-6 flex flex-col justify-between min-h-[450px]">
+                      <div>
+                          {selectedTooth ? (
+                              <div className="space-y-4">
+                                  <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                      <p className="text-sm text-blue-800 font-semibold">
+                                          Odabrani Zub: Br. {selectedTooth}
+                                      </p>
+
+                                      <p className="text-sm text-blue-600 mt-1">
+                                          Površina:
+                                          <strong>
+                                              {selectedSurface
+                                                  ? surfaceTranslations[selectedSurface]
+                                                  : " Cijeli zub"}
+                                          </strong>
+                                      </p>
+                                  </div>
+
+                                  <select
+                                      value={condition}
+                                      onChange={(e) => setCondition(e.target.value)}
+                                      className="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white text-gray-700"
+                                  >
+                                      <option value="healthy">Zdrav zub (Healthy)</option>
+                                      <option value="caries">Karijes (Caries)</option>
+                                      <option value="missing">Nedostaje zub (Missing)</option>
+                                      <option value="filled">Plomba (Filled)</option>
+                                      <option value="bridge">Most (Bridge)</option>
+                                      <option value="implant">Implantat (Implant)</option>
+                                  </select>
+
+                                  <textarea
+                                      rows={4}
+                                      value={notes}
+                                      onChange={(e) => setNotes(e.target.value)}
+                                      placeholder="Unesite zapažanja..."
+                                      className="w-full border border-gray-300 rounded-lg p-2 text-sm text-gray-700"
+                                  />
+
+                                  <button
+                                      onClick={handleSave}
+                                      disabled={saveMutation.isPending}
+                                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-sm"
+                                  >
+                                      {saveMutation.isPending
+                                          ? "Spremanje..."
+                                          : "Spremi Status Zuba"}
+                                  </button>
+
+                                  <div className="mt-6 border-t pt-4">
+                                      <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                                          Historija Tretmana
+                                      </h4>
+
+                                      {timeline.length > 0 ? (
+                                          <div className="space-y-3">
+                                              {timeline.map((item, index) => (
+                                                  <div
+                                                      key={index}
+                                                      className="rounded-lg border border-gray-200 p-3"
+                                                  >
+                                                      <p className="text-sm font-medium text-gray-800">
+                                                          {item.condition}
+                                                      </p>
+
+                                                      <p className="text-xs text-gray-500 mt-1">
+                                                          {item.notes || "No notes"}
+                                                      </p>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      ) : (
+                                          <p className="text-sm text-gray-400">
+                                              Nema historije za ovaj zub.
+                                          </p>
+                                      )}
+                                  </div>
+                              </div>
+                          ) : (
+                              <p className="text-center py-12 text-gray-400 text-sm">
+                                  Odaberite zub sa šeme.
+                              </p>
+                          )}
+                      </div>
+
+                      <div className="mt-8 pt-4 border-t border-gray-100">
+                          <h4 className="text-xs font-bold text-gray-400 tracking-wider uppercase mb-3">
+                              Legenda Statusa
+                          </h4>
+
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-2.5 text-xs">
+                              <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full bg-white border border-gray-300 inline-block shadow-sm"></span>
+                                  <span className="text-gray-600 font-medium">Zdrav zub</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full bg-[#ef4444] inline-block shadow-sm"></span>
+                                  <span className="text-gray-600 font-medium">Karijes</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full bg-[#10b981] inline-block shadow-sm"></span>
+                                  <span className="text-gray-600 font-medium">Plomba</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full bg-[#475569] inline-block shadow-sm"></span>
+                                  <span className="text-gray-600 font-medium">Nedostaje zub</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full bg-[#8b5cf6] inline-block shadow-sm"></span>
+                                  <span className="text-gray-600 font-medium">Most</span>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                  <span className="w-3 h-3 rounded-full bg-[#f59e0b] inline-block shadow-sm"></span>
+                                  <span className="text-gray-600 font-medium">Implantat</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </SheetContent>
+          </Sheet>
       </div>
     </div>
   );
