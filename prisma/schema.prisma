@@ -58,15 +58,16 @@ model Anamnesis {
 }
 
 model Appointment {
-  id         String            @id @default(cuid())
-  patientId  String
-  startTime  DateTime
-  endTime    DateTime
-  status     AppointmentStatus @default(SCHEDULED)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  patient    Patient           @relation(fields: [patientId], references: [id])
-  visitNotes VisitNote[]
+  id          String            @id @default(cuid())
+  patientId   String
+  startTime   DateTime
+  endTime     DateTime
+  status      AppointmentStatus @default(SCHEDULED)
+  reason      String?           // İŞTE BURAYA EKLEDİK (Opsiyonel alan)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  patient     Patient           @relation(fields: [patientId], references: [id])
+  visitNotes  VisitNote[]
 }
 
 model Treatment {

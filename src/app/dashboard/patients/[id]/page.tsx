@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
+import AppointmentFormSheet from "@/components/appointments/AppointmentFormSheet";
 
 function formatDate(date: Date | string): string {
     const d = new Date(date);
@@ -38,7 +39,7 @@ export default function PatientProfilePage() {
     const patientId = params.id;
 
     const { data: patient, isLoading, isError } = api.patients.getById.useQuery(
-        { id: patientId },
+        { id: patientId as string },
         { enabled: !!patientId }
     );
 
@@ -123,8 +124,12 @@ export default function PatientProfilePage() {
                             </div>
                         </div>
 
-                        {/* Aksiyon Butonları Alanı (Odontogram ve Düzenle) */}
-                        <div className="flex gap-3">
+                        {/* Aksiyon Butonları Alanı (Randevu, Odontogram ve Düzenle) */}
+                        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
+                            
+                            {/* YENİ EKLENEN RANDEVU BİLEŞENİ */}
+                            <AppointmentFormSheet patientId={patientId as string} />
+
                             <Link
                                 href={`/dashboard/patients/${patientId}/odontogram`}
                                 className="rounded-xl bg-teal-600 px-4 py-2 text-white font-medium transition hover:bg-teal-700 flex items-center gap-2"

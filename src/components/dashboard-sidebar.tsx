@@ -76,10 +76,13 @@ export function DashboardSidebar({
                     />
                 </Link>
 
-                <NavItem
-                    icon={<CalendarClock size={18} />}
-                    label="Kalendar i Termini"
-                />
+               <Link href="/dashboard/appointments">
+            <NavItem
+                icon={<CalendarClock size={18} />}
+                label="Kalendar i Termini"
+                active={pathname === "/dashboard/appointments"}
+            />
+        </Link>
 
                 <Link href="/dashboard/patients">
                     <NavItem
