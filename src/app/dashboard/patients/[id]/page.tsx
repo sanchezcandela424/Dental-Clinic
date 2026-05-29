@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+
+import { useState } from "react";
+
+
 import { api } from "~/trpc/react";
 import AppointmentFormSheet from "@/components/appointments/AppointmentFormSheet";
 
@@ -38,10 +42,35 @@ export default function PatientProfilePage() {
     const params = useParams<{ id: string }>();
     const patientId = params.id;
 
+
+    const [visitNote, setVisitNote] = useState("");
+
+    const createVisitNote = api.visitNotes.create.useMutation({
+        onSuccess: async () => {
+            setVisitNote("");
+            await refetchVisitNotes();
+        },
+    });
+
+const deleteVisitNote = api.visitNotes.delete.useMutation({
+    onSuccess: async () => {
+        await refetchVisitNotes();
+    },
+});
+
+
+
     const { data: patient, isLoading, isError } = api.patients.getById.useQuery(
         { id: patientId as string },
         { enabled: !!patientId }
     );
+
+const { data: visitNotes, refetch: refetchVisitNotes } =
+    api.visitNotes.getByPatientId.useQuery({
+        patientId: patientId as string,
+    });
+
+
 
     if (isLoading) {
         return (
@@ -90,9 +119,29 @@ export default function PatientProfilePage() {
 
     const display = (value: string | null | undefined) => value?.trim() || "—";
 
+
+
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="mx-auto max-w-5xl space-y-6">
+
+                {anamnesis?.allergiesFlag && (
+                    <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm">
+                        <div className="flex items-start gap-3">
+                            <div className="text-2xl">⚠️</div>
+
+                            <div>
+                                <h2 className="font-semibold text-red-700">
+                                    Upozorenje na alergije
+                                </h2>
+
+                                <p className="mt-1 text-red-600">
+                                    {display(anamnesis?.allergiesDetails)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <button
                     onClick={() => window.history.back()}
@@ -333,8 +382,76 @@ export default function PatientProfilePage() {
                     </div>
                 </div>
 
+
+                <div className="rounded-3xl bg-white p-6 shadow-sm">
+                    <h2 className="mb-4 text-xl font-semibold">
+                        Bilješke pregleda
+                    </h2>
+
+                    <textarea
+                        value={visitNote}
+                        onChange={(e) => setVisitNote(e.target.value)}
+                        placeholder="Dodaj bilješku..."
+                        className="w-full rounded-xl border border-gray-200 p-3 outline-none transition focus:ring-2 focus:ring-blue-400"
+                        rows={4}
+                    />
+
+                    <button
+                        onClick={() => {
+                            if (!visitNote.trim()) return;
+
+                            createVisitNote.mutate({
+                                patientId: patientId as string,
+                                content: visitNote,
+                            });
+                        }}
+                        className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                    >
+                        Sačuvaj bilješku
+                    </button>
+
+
+                    <div className="mt-6 space-y-3">
+                        {visitNotes?.map((note) => (
+                            <div
+                                key={note.id}
+                                className="rounded-2xl bg-gray-50 p-4"
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <p className="text-sm text-gray-500">
+                                            {formatDate(note.createdAt)}
+                                        </p>
+
+                                        <p className="mt-2">
+                                            {note.content}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={() =>
+                                            deleteVisitNote.mutate({
+                                                id: note.id,
+                                            })
+                                        }
+                                        className="text-sm text-red-500 transition hover:text-red-700"
+                                    >
+                                        Obriši
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+
+                </div>
+
+
+
                 <div className="rounded-3xl bg-white p-6 shadow-sm">
                     <h2 className="mb-4 text-xl font-semibold">Interne napomene</h2>
+
+
                     <p className="text-gray-700">
                         {display(patient.notes) === "—" ? "Nema internih napomena." : patient.notes}
                     </p>

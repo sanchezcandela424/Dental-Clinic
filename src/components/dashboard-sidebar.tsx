@@ -25,7 +25,7 @@ export function DashboardSidebar({
                                  }: DashboardSidebarProps) {
     const pathname = usePathname();
     return (
-        <aside className="hidden w-72 flex-col space-y-8 border-r bg-white p-6 text-slate-600 md:flex">
+        <aside className="sticky top-0 hidden h-screen w-72 flex-col space-y-8 border-r bg-white p-6 text-slate-600 md:flex">
 
             {/* LOGO */}
             <div className="mb-2 flex flex-col items-center gap-3 px-2">
