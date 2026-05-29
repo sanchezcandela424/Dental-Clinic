@@ -1,7 +1,7 @@
 
 import { z } from "zod";
 import { prisma } from "~/lib/prisma";
-import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const visitNotesRouter = createTRPCRouter({
 
