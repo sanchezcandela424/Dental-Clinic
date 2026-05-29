@@ -1,215 +1,241 @@
 "use client";
-
-import React, { Suspense } from 'react';
+ 
+import { useSession } from "next-auth/react";
+import { api } from "~/trpc/react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import Link from "next/link";
-import { useSearchParams } from 'next/navigation';
-import { 
-  LayoutDashboard, Users, CalendarClock, Search, 
-  TrendingUp, TrendingDown, Bell, MoreVertical, 
-  LogIn, Receipt, Settings, ShieldAlert, UserCog
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DashboardSidebar } from "@/components/dashboard-sidebar";
-
+ 
+ 
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+    SCHEDULED:   { label: "Zakazano",  color: "#3b82f6", bg: "bg-blue-50 text-blue-700 border-blue-200" },
+    WAITING:     { label: "Čeka",      color: "#eab308", bg: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+    IN_PROGRESS: { label: "U toku",    color: "#f97316", bg: "bg-orange-50 text-orange-700 border-orange-200" },
+    COMPLETED:   { label: "Završeno",  color: "#22c55e", bg: "bg-green-50 text-green-700 border-green-200" },
+    CANCELLED:   { label: "Otkazano",  color: "#94a3b8", bg: "bg-gray-50 text-gray-400 border-gray-200" },
+};
+ 
+function formatTime(date: Date | string) {
+    return new Date(date).toTimeString().slice(0, 5);
+}
+ 
+ 
 export default function DashboardPage() {
-  return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Učitavanje...</div>}>
-      <DashboardContent />
-    </Suspense>
-  );
-}
-
-function DashboardContent() {
-  const searchParams = useSearchParams();
-  
-
-  const roleFromUrl = searchParams.get('role');
-  const userRole: 'MASTER' | 'STAFF' = roleFromUrl === 'MASTER' ? 'MASTER' : 'STAFF';
-  const isMaster = userRole === 'MASTER';
-
-  return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-blue-100">
-
-
-
-        <main className="flex-1 p-8 overflow-y-auto">
-        <header className="flex justify-between items-center mb-8 text-slate-500">
+    const { data: session } = useSession();
+    const { data: stats, isLoading } = api.appointment.getDashboardStats.useQuery();
+ 
+    const utils = api.useUtils();
+ 
+    const updateStatus = api.appointment.update.useMutation({
+        onSuccess: () => {
+            void utils.appointment.getDashboardStats.invalidate();
+        },
+    });
+ 
+    const pieData = stats
+        ? Object.entries(stats.statusCounts)
+              .filter(([, count]) => count > 0)
+              .map(([status, count]) => ({
+                  name:  STATUS_CONFIG[status]?.label ?? status,
+                  value: count,
+                  color: STATUS_CONFIG[status]?.color ?? "#94a3b8",
+              }))
+        : [];
+ 
+    return (
+        <div className="p-6 space-y-6">
+ 
             <div>
-              <h1 className="text-2xl font-bold text-blue-950 uppercase tracking-tighter">City Dental</h1>
-              <p className="text-sm text-slate-400 font-medium italic">Dobrodošli u CityDent: Dom vašeg savršenog osmijeha.</p>
+                <h1 className="text-2xl font-bold text-slate-900">
+                    Dobro jutro, {session?.user?.role === "MASTER" ? "Doktore" : ""}
+                </h1>
+                <p className="text-sm text-slate-500 mt-1">
+                    Pregled rada za danas
+                </p>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-slate-200">
-                  <Bell size={20} className="text-slate-500" />
-              </Button>
-
-             
-              <Button 
-                variant={isMaster ? "default" : "secondary"}
-                className={`${isMaster ? 'bg-blue-950 hover:bg-blue-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'} rounded-xl px-5 py-2 h-auto flex items-center gap-2 shadow-sm transition-all font-semibold text-sm`}
-              >
-                {isMaster ? <UserCog size={18} className="text-blue-400" /> : <LogIn size={18} />}
-                <span>{isMaster ? 'Dr. Master' : 'Staff Osoblje'}</span>
-              </Button>
+ 
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard
+                    label="Ukupno termina"
+                    value={isLoading ? "..." : String(stats?.total ?? 0)}
+                    color="text-blue-600"
+                    bg="bg-blue-50"
+                />
+                <StatCard
+                    label="Danas"
+                    value={isLoading ? "..." : String(stats?.todaysAppointments.length ?? 0)}
+                    color="text-orange-600"
+                    bg="bg-orange-50"
+                />
+                <StatCard
+                    label="Završeno"
+                    value={isLoading ? "..." : String(stats?.statusCounts.COMPLETED ?? 0)}
+                    color="text-green-600"
+                    bg="bg-green-50"
+                />
+                <StatCard
+                    label="Novi pacijenti (ovaj mj.)"
+                    value={isLoading ? "..." : String(stats?.newPatientsThisMonth ?? 0)}
+                    color="text-purple-600"
+                    bg="bg-purple-50"
+                />
             </div>
-        </header>
-
-       
-        <div className={`grid grid-cols-1 ${isMaster ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6 mb-8`}>
-          
-          
-          {isMaster && (
-            <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl animate-in zoom-in duration-300">
-              <CardHeader className="pb-1 px-5 pt-5">
-                <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">Ukupni prihodi</CardTitle>
-              </CardHeader>
-              <CardContent className="px-5 pb-5 pt-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-black text-blue-950">15%</span>
-                  <div className="flex items-center text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">
-                      <TrendingUp size={14} className="mr-1" />
-                      <span className="text-xs font-bold">Rast</span>
-                  </div>
+ 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+ 
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <h2 className="text-lg font-semibold text-slate-800 mb-4">
+                        Termini po statusu
+                    </h2>
+ 
+                    {isLoading && (
+                        <div className="flex items-center justify-center h-48 text-gray-400">
+                            Učitavanje...
+                        </div>
+                    )}
+ 
+                    {!isLoading && pieData.length === 0 && (
+                        <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+                            Nema podataka za prikaz.
+                        </div>
+                    )}
+ 
+                    {!isLoading && pieData.length > 0 && (
+                        <div className="flex flex-col items-center">
+                            <ResponsiveContainer width="100%" height={220}>
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={90}
+                                        paddingAngle={3}
+                                        dataKey="value"
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={index} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        formatter={(value, name) => [value, name]}
+                                        contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0" }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+ 
+                            {/* Legend */}
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-2 w-full">
+                                {pieData.map((entry) => (
+                                    <div key={entry.name} className="flex items-center gap-2">
+                                        <span
+                                            className="w-3 h-3 rounded-full shrink-0"
+                                            style={{ backgroundColor: entry.color }}
+                                        />
+                                        <span className="text-sm text-gray-600">{entry.name}</span>
+                                        <span className="text-sm font-bold text-gray-800 ml-auto">
+                                            {entry.value}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
-                <p className="text-[11px] text-slate-400 mt-2 font-medium">U odnosu na prošlu sedmicu</p>
-                <Button variant="link" className="text-blue-600 p-0 h-auto text-xs font-bold mt-3">Izvještaj prihoda →</Button>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="border-none shadow-sm hover:shadow-md transition-shadow rounded-2xl">
-            <CardHeader className="pb-1 px-5 pt-5">
-              <CardTitle className="text-xs font-bold text-slate-500 uppercase tracking-wider">Otkazani termini</CardTitle>
-            </CardHeader>
-            <CardContent className="px-5 pb-5 pt-2">
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-black text-blue-950">4%</span>
-                <div className="flex items-center text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">
-                    <TrendingDown size={14} className="mr-1" />
-                    <span className="text-xs font-bold">Pad</span>
+ 
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-semibold text-slate-800">Termini danas</h2>
+                        <Link
+                            href="/dashboard/appointments"
+                            className="text-sm text-blue-600 hover:underline"
+                        >
+                            Vidi sve →
+                        </Link>
+                    </div>
+ 
+                    {isLoading && (
+                        <p className="text-sm text-gray-400 text-center py-8">Učitavanje...</p>
+                    )}
+ 
+                    {!isLoading && stats?.todaysAppointments.length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-8">
+                            Nema zakazanih termina za danas.
+                        </p>
+                    )}
+ 
+                    <div className="space-y-3">
+                        {stats?.todaysAppointments.map((appt) => (
+                            <div
+                                key={appt.id}
+                                className={`flex items-center justify-between p-3 rounded-xl border ${
+                                    STATUS_CONFIG[appt.status]?.bg ?? ""
+                                }`}
+                            >
+                                <div>
+                                    <p className="font-semibold text-sm text-slate-800">
+                                        {appt.patient.fullName}
+                                    </p>
+                                    <p className="text-xs opacity-70 mt-0.5">
+                                        {formatTime(appt.startTime)} — {formatTime(appt.endTime)}
+                                    </p>
+                                </div>
+ 
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
+                                        STATUS_CONFIG[appt.status]?.bg ?? ""
+                                    }`}>
+                                        {STATUS_CONFIG[appt.status]?.label}
+                                    </span>
+ 
+                                    {appt.status === "SCHEDULED" && (
+                                        <button
+                                            onClick={() => updateStatus.mutate({ id: appt.id, status: "WAITING" })}
+                                            className="text-xs px-2 py-0.5 rounded-lg bg-white/70 hover:bg-white font-medium transition border"
+                                        >
+                                            → Čeka
+                                        </button>
+                                    )}
+                                    {appt.status === "WAITING" && (
+                                        <button
+                                            onClick={() => updateStatus.mutate({ id: appt.id, status: "IN_PROGRESS" })}
+                                            className="text-xs px-2 py-0.5 rounded-lg bg-white/70 hover:bg-white font-medium transition border"
+                                        >
+                                            → U toku
+                                        </button>
+                                    )}
+                                    {appt.status === "IN_PROGRESS" && (
+                                        <button
+                                            onClick={() => updateStatus.mutate({ id: appt.id, status: "COMPLETED" })}
+                                            className="text-xs px-2 py-0.5 rounded-lg bg-white/70 hover:bg-white font-medium transition border"
+                                        >
+                                            ✓ Završi
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-2 font-medium">Zatvoreno 96 od 100 termina</p>
-              <Button variant="link" className="text-blue-600 p-0 h-auto text-xs font-bold mt-3">Svi termini →</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-2xl">
-            <CardHeader className="pb-1 px-5 pt-5 text-center">
-              <CardTitle className="text-xs font-bold text-blue-100 uppercase tracking-wider">Dnevni cilj termina</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center px-5 pb-5 pt-2">
-              <div className="relative h-20 w-36 flex items-end justify-center overflow-hidden">
-                <div className="absolute inset-0 border-[10px] border-blue-500/30 rounded-full" />
-                <div className="absolute inset-0 border-[10px] border-white rounded-full border-b-transparent border-l-transparent rotate-[45deg]" />
-                <span className="text-2xl font-black mb-1">84%</span>
-              </div>
-              <Button variant="link" className="text-blue-100 p-0 h-auto text-xs font-bold mt-3">Detalji →</Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden rounded-2xl">
-            <CardHeader className="flex flex-row items-center justify-between bg-white border-b border-slate-50 px-6 py-4">
-              <CardTitle className="text-lg font-bold text-blue-950">Nedavni Pacijenti</CardTitle>
-              <Button variant="ghost" className="text-xs font-bold text-slate-500">Poredaj po: Najnovijim</Button>
-            </CardHeader>
-            <CardContent className="p-0">
-               <PatientItem name="Sanjin Ruzic" description="Stomatološki pregled" avatar="SR" />
-               <PatientItem name="Edin Hodžić" description="Čišćenje kamenca" active avatar="EH" />
-               <PatientItem name="Amina Begić" description="Popravka zuba" avatar="AB" />
-               <PatientItem name="Ajsa Jusić" description="Kontrola" avatar="AJ" />
-               <div className="p-4 border-t border-slate-50">
-                <Button variant="link" className="text-blue-600 p-0 h-auto text-xs font-bold">Svi pacijenti →</Button>
-               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm flex flex-col p-6 rounded-2xl bg-white">
-              <CardTitle className="text-lg font-bold text-blue-950 mb-6">Aktivnost Klinike</CardTitle>
-               <div className="flex-1 flex flex-col justify-end">
-               <div className="h-44 w-full bg-gradient-to-t from-blue-50/30 to-transparent rounded-xl flex items-end gap-1.5 px-2">
-                 {[40, 60, 45, 80, 55, 90, 70, 95].map((h, i) => (
-                   <div key={i} style={{ height: `${h}%` }} className="flex-1 bg-blue-600/20 hover:bg-blue-600 rounded-t-sm transition-all cursor-pointer" />
-                 ))}
-               </div>
-               <div className="flex justify-between mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                 <span>Pon</span><span>Sri</span><span>Pet</span>
-               </div>
             </div>
-          </Card>
         </div>
-      </main>
-    </div>
-  );
+    );
 }
-
-
-
-function SmilingTeethTeam({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 350 200" className={className}>
-      <g transform="translate(5, 30) scale(0.8)">
-        <path d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z" fill="white" stroke="#cbd5e1" strokeWidth="4" />
-        <circle cx="85" cy="70" r="4" fill="#1e293b" /><circle cx="115" cy="70" r="4" fill="#1e293b" />
-        <path d="M85,90 Q100,105 115,90" fill="none" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
-      </g>
-      <g transform="translate(185, 30) scale(0.8)">
-        <path d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z" fill="white" stroke="#cbd5e1" strokeWidth="4" />
-        <circle cx="85" cy="70" r="4" fill="#1e293b" /><circle cx="115" cy="70" r="4" fill="#1e293b" />
-        <path d="M85,90 Q100,105 115,90" fill="none" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
-      </g>
-      <g transform="translate(75, 5) scale(1.0)">
-        <path d="M50,50 C50,20 150,20 150,50 C150,75 165,90 160,115 C155,140 140,150 130,175 C125,188 120,195 110,195 C100,195 98,175 100,155 C102,175 100,195 90,195 C80,195 75,188 70,175 C60,150 45,140 40,115 C35,90 50,75 50,50 Z" fill="white" stroke="#3b82f6" strokeWidth="6" strokeLinejoin="round" />
-        <circle cx="85" cy="70" r="5" fill="#1e293b" /><circle cx="115" cy="70" r="5" fill="#1e293b" />
-        <path d="M80,95 Q100,115 120,95" fill="none" stroke="#3b82f6" strokeWidth="4" strokeLinecap="round" />
-      </g>
-    </svg>
-  );
-}
-
-function NavItem({ icon, label, active = false, isMasterOnly = false }: { icon: React.ReactNode, label: string, active?: boolean, isMasterOnly?: boolean }) {
-  return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 
-      ${active ? 'bg-blue-600 text-white shadow-md shadow-blue-100 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600 font-semibold'}
-      ${isMasterOnly ? 'hover:bg-rose-50 hover:text-rose-600' : ''}
-    `}>
-      {icon}
-      <span className="text-sm tracking-tight flex-1">{label}</span>
-      {isMasterOnly && <LockIcon size={14} className="text-rose-300" />}
-    </div>
-  );
-}
-
-function LockIcon({ size, className }: { size: number, className: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>
-  );
-}
-
-function PatientItem({ name, description, active = false, avatar }: { name: string, description: string, active?: boolean, avatar: string }) {
-  return (
-    <div className={`flex items-center justify-between px-6 py-4 border-b border-slate-50 last:border-0 transition-all ${active ? 'bg-orange-50/30' : 'hover:bg-slate-50/50'}`}>
-      <div className="flex items-center gap-4">
-        <Avatar className="h-10 w-10">
-          <AvatarFallback className={`${active ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} text-xs font-bold`}>{avatar}</AvatarFallback>
-        </Avatar>
-        <div>
-          <p className={`text-sm font-bold ${active ? 'text-blue-950' : 'text-slate-700'}`}>{name}</p>
-          <p className="text-[11px] font-medium text-slate-400 italic">{description}</p>
+ 
+function StatCard({
+    label,
+    value,
+    color,
+    bg,
+}: {
+    label: string;
+    value: string;
+    color: string;
+    bg:    string;
+}) {
+    return (
+        <div className={`${bg} rounded-2xl p-5 border border-white`}>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
+            <p className={`text-3xl font-black mt-1 ${color}`}>{value}</p>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300"><MoreVertical size={16}/></Button>
-      </div>
-    </div>
-  );
+    );
 }
