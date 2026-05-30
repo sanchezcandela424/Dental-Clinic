@@ -1,0 +1,157 @@
+import Image from "next/image";
+
+type Service = {
+  code: string;
+  name: string;
+  price: number;
+};
+
+type Props = {
+  services: Service[];
+};
+
+export default function PriceListTemplate({
+                                            services,
+                                          }: Props) {
+  return (
+    <div className="bg-gray-100 py-10">
+      <div className="mx-auto w-[210mm] min-h-[297mm] bg-white p-10 shadow-lg">
+
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-300 pb-6">
+          <div className="flex items-center gap-4">
+            <div className="relative h-20 w-20">
+              <Image
+                src="/clinic-logo-v3.png"
+                alt="City Dent Logo"
+                fill
+                priority
+                className="object-contain"
+              />
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-600">
+                Privatna stomatološka ordinacija
+              </p>
+
+              <h1 className="text-xl font-bold tracking-wide text-gray-900">
+                CITY DENT
+              </h1>
+
+
+
+              <p className="mt-1 text-sm text-gray-500">
+                Dr. Erdin Tatarević
+              </p>
+            </div>
+          </div>
+
+          <div className="text-right text-sm text-gray-600">
+            <p>Višnjik 34 B</p>
+            <p>Sarajevo</p>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="my-6 text-center">
+          <h2 className="text-3xl font-bold tracking-wide text-gray-900">
+            CJENOVNIK USLUGA
+          </h2>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-hidden rounded-lg border border-gray-300">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+            <tr className="bg-[#0B2A78] text-white">
+              <th className="border border-gray-300 px-4 py-3 text-left font-semibold">
+                Šifra
+              </th>
+
+              <th className="border border-gray-300 px-4 py-3 text-left font-semibold">
+                Naziv usluge
+              </th>
+
+              <th className="border border-gray-300 px-4 py-3 text-right font-semibold">
+                Cijena (KM)
+              </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {services.map((service) => (
+              <tr key={service.code}>
+                <td className="border border-gray-200 px-4 py-4">
+                  {service.code}
+                </td>
+
+                <td className="border border-gray-200 px-4 py-4">
+                  {service.name}
+                </td>
+
+                <td className="border border-gray-200 px-4 py-4 text-right font-medium">
+                  {service.price.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Notes */}
+        <div className="mt-10 border-t border-gray-300 pt-6">
+          <h3 className="mb-4 text-base font-semibold text-gray-900">
+            Napomene
+          </h3>
+
+          <ul className="list-disc space-y-2 pl-5 text-sm text-gray-700">
+            <li>
+              U cijenu protetskih radova uključena je tehnička izrada.
+            </li>
+
+            <li>
+              Garancija za konzervativne radove iznosi 1 godinu,
+              a za protetske radove 3 godine.
+            </li>
+
+            <li>
+              Ukoliko termin nije otkazan najmanje 2 sata prije
+              zakazanog vremena, naplaćuje se rezervacija termina
+              u iznosu od 20,00 KM.
+            </li>
+
+            <li>
+              Za strane državljane cijene konzervativnih radova
+              obračunavaju se prema posebnom cjenovniku.
+            </li>
+          </ul>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-14 flex items-end justify-between border-t border-gray-300 pt-6">
+          <div>
+            <p className="font-semibold text-gray-900">
+              Hvala na ukazanom povjerenju.
+            </p>
+
+            <p className="mt-2 text-sm text-gray-500">
+              Sarajevo, 13.03.2026.
+            </p>
+          </div>
+
+          <div className="text-right">
+            <p className="font-semibold text-gray-900">
+              Dr. Erdin Tatarević
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Doktor stomatologije
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
