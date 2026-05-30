@@ -42,6 +42,7 @@ export function DashboardSidebar({
 
                 <div className="flex flex-col items-center">
 
+
           <span className="text-2xl font-black uppercase tracking-tighter text-[#1e293b]">
             City<span className="text-[#3b82f6]">Dent</span>
           </span>
@@ -94,11 +95,13 @@ export function DashboardSidebar({
                     />
                 </Link>
 
+              <Link href="/dashboard/invoices">
                 <NavItem
-                    icon={<Receipt size={18} />}
-                    label="Računi i Naplata"
+                  icon={<Receipt size={18} />}
+                  label="Računi i Naplata"
+                  active={pathname.startsWith("/dashboard/invoices")}
                 />
-
+              </Link>
 
 
             </nav>

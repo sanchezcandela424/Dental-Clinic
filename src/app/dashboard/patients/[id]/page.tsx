@@ -185,7 +185,14 @@ const { data: visitNotes, refetch: refetchVisitNotes } =
                             >
                                 🦷 Pregled Odontograma
                             </Link>
-                            
+
+                          <Link
+                            href={`/dashboard/invoices/create`}
+                            className="rounded-xl bg-green-600 px-4 py-2 text-white font-medium transition hover:bg-green-700 flex items-center"
+                          >
+                            💳 Novi račun
+                          </Link>
+
                             <Link
                                 href={`/dashboard/patients/${patientId}/edit`}
                                 className="rounded-xl bg-blue-600 px-4 py-2 text-white font-medium transition hover:bg-blue-700 flex items-center"
