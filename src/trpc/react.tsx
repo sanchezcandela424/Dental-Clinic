@@ -11,8 +11,6 @@ import { loggerLink, httpBatchLink } from "@trpc/client";
 import { useState } from "react";
 import superjson from "superjson";
 
-import { type AppRouter } from "~/server/api/root";
-
 
 
 // Provider component to wrap the application and enable tRPC/React Query
@@ -21,7 +19,6 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
 
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer: superjson,
       links: [
         // Adds clean logs in development console for debugging requests
         loggerLink({
@@ -32,6 +29,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
         // Directs all tRPC requests to the Next.js API route
         httpBatchLink({
           url: "/api/trpc",
+          transformer: superjson,
         }),
       ],
     })

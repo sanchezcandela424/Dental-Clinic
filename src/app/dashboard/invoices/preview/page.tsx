@@ -4,7 +4,7 @@ const invoice = {
   patientName: "Ajša Jusić",
   date: "2026-05-30",
   total: 210,
-  status: "paid",
+  status: "paid" as const,
   items: [
     {
       id: "1",

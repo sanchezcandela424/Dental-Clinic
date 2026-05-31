@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from "next-auth/react"; 
 import Image from 'next/image'; // Imported for modern and optimized image handling
 import { 
-  Lock, Mail, ShieldCheck, ArrowRight, 
+  Lock, Mail, ArrowRight,
   Stethoscope, UserCog, ClipboardList, ChevronLeft,
   Loader2 
 } from 'lucide-react';
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 City<span className="text-blue-600">Dent</span>
               </h1>
               <p className="text-blue-500 font-bold tracking-[0.3em] text-[10px] uppercase">
-                Internal Management System
+                Sistem uprave
               </p>
             </div>
           </div>
@@ -174,13 +174,6 @@ export default function LoginPage() {
                     )}
                   </Button>
                 </form>
-
-                <div className="pt-2 flex items-center justify-center gap-2">
-                  <ShieldCheck size={14} className="text-emerald-500" />
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    AES-256 Sigurna veza
-                  </p>
-                </div>
               </CardContent>
             </Card>
           )}
@@ -189,7 +182,7 @@ export default function LoginPage() {
 
       <footer className="p-6 text-center z-10">
         <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.4em]">
-          CityDent IMS © 2026 | Sva prava zadržana
+          CITY DENT © 2026 | Sva prava zadržana
         </p>
       </footer>
     </div>

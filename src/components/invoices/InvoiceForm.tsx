@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,6 +25,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
+import { api } from "~/trpc/react";
 
 const services = [
   { code: "0001", name: "Estetska jednopovršinska plomba", price: 50 },
@@ -89,13 +91,16 @@ const services = [
 ];
 
 export default function InvoiceForm() {
+  const router = useRouter();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [patientOpen, setPatientOpen] = useState(false);
 
-  const [patientName, setPatientName] = useState("");
+  const [selectedPatientId, setSelectedPatientId] = useState("");
   const [date, setDate] = useState<Date>();
-  const [status, setStatus] = useState("draft");
+  const [status, setStatus] = useState<"DRAFT" | "PAID" | "UNPAID">("DRAFT");
   const [patientError, setPatientError] = useState("");
   const [serviceError, setServiceError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [items, setItems] = useState([
     {
       serviceId: "",
@@ -103,10 +108,30 @@ export default function InvoiceForm() {
     },
   ]);
 
-  const total = items.reduce((sum, item) => {
+  const { data: patientsData } = api.patients.list.useQuery({
+    page: 1,
+    perPage: 100,
+  });
+  const createInvoice = api.invoice.create.useMutation({
+    onSuccess: (data) => {
+      router.push(`/dashboard/invoices/${data.invoice.id}`);
+    },
+    onError: (error) => {
+      console.error("Error creating invoice:", error);
+      setSubmitError(error.message || "Greška pri čuvanju računa");
+    },
+  });
+
+  const patients = patientsData?.patients || [];
+
+  const subtotal = items.reduce((sum, item) => {
     const service = services.find((s) => s.code === item.serviceId);
     return sum + (service?.price ?? 0) * item.quantity;
   }, 0);
+
+  const taxRate = 0.17;
+  const taxAmount = subtotal * taxRate;
+  const total = subtotal + taxAmount;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,8 +141,8 @@ export default function InvoiceForm() {
 
     let hasError = false;
 
-    if (!patientName.trim()) {
-      setPatientError("Unesite ime pacijenta.");
+    if (!selectedPatientId) {
+      setPatientError("Odaberite pacijenta.");
       hasError = true;
     }
 
@@ -131,12 +156,22 @@ export default function InvoiceForm() {
 
     if (hasError) return;
 
-    console.log({
-      patientName,
-      date,
+    const invoiceItems = items
+      .filter((item) => item.serviceId !== "")
+      .map((item) => {
+        const service = services.find((s) => s.code === item.serviceId);
+        return {
+          serviceCode: item.serviceId,
+          serviceName: service?.name || "",
+          quantity: item.quantity,
+          priceSnapshot: service?.price || 0,
+        };
+      });
+
+    createInvoice.mutate({
+      patientId: selectedPatientId,
+      items: invoiceItems,
       status,
-      items,
-      total,
     });
   };
 
@@ -163,16 +198,53 @@ export default function InvoiceForm() {
             Pacijent
           </label>
 
-          <Input
-            value={patientName}
-            onChange={(e) => setPatientName(e.target.value)}
-            placeholder="Ime i prezime pacijenta"
-          />
+          <Popover open={patientOpen} onOpenChange={setPatientOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                role="combobox"
+                className="w-full justify-between h-12 rounded-xl font-normal"
+              >
+                {selectedPatientId
+                  ? patients.find((p) => p.id === selectedPatientId)?.fullName
+                  : "Odaberite pacijenta"}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+
+            <PopoverContent className="w-[450px] p-0">
+              <Command>
+                <CommandInput placeholder="Pretraži pacijente..." />
+                <CommandEmpty>Nema pronađenih pacijenata.</CommandEmpty>
+                <CommandGroup className="max-h-72 overflow-y-auto">
+                  {patients.map((patient) => (
+                    <CommandItem
+                      key={patient.id}
+                      value={patient.fullName}
+                      onSelect={() => {
+                        setSelectedPatientId(patient.id);
+                        setPatientOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedPatientId === patient.id
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      {patient.fullName} ({patient.jmb})
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
 
           {patientError && (
-            <p className="mt-1 text-sm text-red-500">
-              {patientError}
-            </p>
+            <p className="mt-1 text-sm text-red-500">{patientError}</p>
           )}
         </div>
 
@@ -202,7 +274,6 @@ export default function InvoiceForm() {
                 selected={date}
                 onSelect={setDate}
                 locale={bs}
-                initialFocus
               />
             </PopoverContent>
           </Popover>
@@ -255,14 +326,15 @@ export default function InvoiceForm() {
                       </CommandEmpty>
 
                       <CommandGroup className="max-h-72 overflow-y-auto">
-                        {services.map((service) => (
+                        {services.map((svc) => (
                           <CommandItem
-                            key={service.code}
-                            value={`${service.code} ${service.name}`}
+                            key={svc.code}
+                            value={`${svc.code} ${svc.name}`}
                             onSelect={() => {
                               const updated = [...items];
-                              updated[index].serviceId =
-                                service.code;
+                              if (updated[index]) {
+                                updated[index].serviceId = svc.code;
+                              }
                               setItems(updated);
                               setOpenIndex(null);
                             }}
@@ -270,14 +342,14 @@ export default function InvoiceForm() {
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                item.serviceId === service.code
+                                item.serviceId === svc.code
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
                             />
 
-                            {service.code} - {service.name} (
-                            {service.price} KM)
+                            {svc.code} - {svc.name} (
+                            {svc.price} KM)
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -291,8 +363,9 @@ export default function InvoiceForm() {
                   value={item.quantity}
                   onChange={(e) => {
                     const updated = [...items];
-                    updated[index].quantity =
-                      Number(e.target.value);
+                    if (updated[index]) {
+                      updated[index].quantity = Number(e.target.value);
+                    }
 
                     setItems(updated);
                   }}
@@ -344,10 +417,19 @@ export default function InvoiceForm() {
           )}
         </div>
 
-        <div className="rounded-xl bg-gray-50 p-4">
-          <p className="text-lg font-semibold">
-            Ukupno: {total} KM
-          </p>
+        <div className="rounded-xl bg-gray-50 p-4 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>Podzbroj:</span>
+            <span>{subtotal.toFixed(2)} KM</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span>PDV (17%):</span>
+            <span>{taxAmount.toFixed(2)} KM</span>
+          </div>
+          <div className="border-t pt-2 flex justify-between text-lg font-semibold">
+            <span>Ukupno:</span>
+            <span>{total.toFixed(2)} KM</span>
+          </div>
         </div>
 
         <div>
@@ -357,21 +439,28 @@ export default function InvoiceForm() {
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => setStatus(e.target.value as "DRAFT" | "PAID" | "UNPAID")}
             className="w-full rounded-xl border border-gray-300 p-3 h-12"
           >
-            <option value="draft">Nacrt</option>
-            <option value="paid">Plaćen</option>
-            <option value="unpaid">Neplaćen</option>
+            <option value="DRAFT">Nacrt</option>
+            <option value="PAID">Plaćen</option>
+            <option value="UNPAID">Neplaćen</option>
           </select>
         </div>
+
+        {submitError && (
+          <div className="rounded-xl bg-red-50 p-3 text-red-700">
+            {submitError}
+          </div>
+        )}
 
         <div className="flex justify-end">
           <Button
             type="submit"
+            disabled={createInvoice.isPending}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            Sačuvaj račun
+            {createInvoice.isPending ? "Čuvanje..." : "Sačuvaj račun"}
           </Button>
         </div>
       </form>

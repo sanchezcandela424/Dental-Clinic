@@ -2,6 +2,7 @@ import type { Invoice } from "@/types/invoice";
 import InvoiceActions from "./InvoiceActions";
 type Props = {
   invoice: Invoice;
+  invoiceId?: string;
 };
 
 const statusLabels = {
@@ -10,7 +11,7 @@ const statusLabels = {
   unpaid: "Neplaćen",
 };
 
-export default function InvoicePreview({ invoice }: Props) {
+export default function InvoicePreview({ invoice, invoiceId }: Props) {
   return (
     <div className="rounded-3xl bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-2xl font-semibold">
@@ -76,14 +77,24 @@ export default function InvoicePreview({ invoice }: Props) {
         </table>
       </div>
 
-      <div className="mt-6 rounded-xl bg-gray-50 p-4 text-right">
-        <h2 className="text-2xl font-bold">
-          Ukupno: {invoice.total} KM
-        </h2>
+      <div className="mt-6 rounded-xl bg-gray-50 p-4 text-right space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>Podzbroj:</span>
+          <span>{invoice.subtotal ? invoice.subtotal.toFixed(2) : (invoice.total / 1.17).toFixed(2)} KM</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span>PDV (17%):</span>
+          <span>{invoice.taxAmount ? invoice.taxAmount.toFixed(2) : (invoice.total * 0.17).toFixed(2)} KM</span>
+        </div>
+        <div className="border-t pt-2">
+          <h2 className="text-2xl font-bold">
+            Ukupno: {invoice.total.toFixed(2)} KM
+          </h2>
+        </div>
       </div>
 
       <div className="mt-6 flex justify-end">
-        <InvoiceActions />
+        <InvoiceActions invoiceId={invoiceId} />
       </div>
     </div>
 
