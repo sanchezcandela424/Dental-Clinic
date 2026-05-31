@@ -32,8 +32,19 @@ test('should open date picker and allow selection', async ({ page }) => {
   await page.getByRole('button', { name: 'Dodaj termin' }).click();
   
   // Click the date input to trigger the calendar
-  await page.locator('input[placeholder="mm/dd/yyyy"]').click();
+  await page.locator('input[Show date picker]').click();
   
   // Verify the calendar view (date picker) is visible
   await expect(page.getByText('May 2026')).toBeVisible();
+});
+test('should open time picker for appointment start time', async ({ page }) => {
+  await page.goto('/dashboard/appointments');
+  // Open the modal
+  await page.getByRole('button', { name: 'Dodaj termin' }).click();
+  
+  // Click the time input (using the placeholder or similar selector)
+  await page.locator('input[placeholder="Show time picker"]').first().click();
+  
+  // Verify the time selection dropdown appears (e.g., checking for the 'PM' indicator)
+  await expect(page.getByText('PM')).toBeVisible();
 });
