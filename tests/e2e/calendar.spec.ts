@@ -20,3 +20,9 @@ test.describe('Calendar Feature', () => {
     await expect(page.getByRole('button', { name: 'Danas' })).toBeVisible();
   });
 });
+test('should open add appointment modal when button is clicked', async ({ page }) => {
+  await page.goto('/dashboard/appointments');
+  await page.getByRole('button', { name: 'Dodaj termin' }).click();
+  // Verify that the modal title is visible
+  await expect(page.getByText('Zakazivanje novog termina')).toBeVisible();
+});
