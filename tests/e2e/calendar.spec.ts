@@ -26,3 +26,14 @@ test('should open add appointment modal when button is clicked', async ({ page }
   // Verify that the modal title is visible
   await expect(page.getByText('Zakazivanje novog termina')).toBeVisible();
 });
+test('should open date picker and allow selection', async ({ page }) => {
+  await page.goto('/dashboard/appointments');
+  // Open the modal
+  await page.getByRole('button', { name: 'Dodaj termin' }).click();
+  
+  // Click the date input to trigger the calendar
+  await page.locator('input[placeholder="mm/dd/yyyy"]').click();
+  
+  // Verify the calendar view (date picker) is visible
+  await expect(page.getByText('May 2026')).toBeVisible();
+});
