@@ -23,7 +23,7 @@ export default function PriceListPage() {
   }) => {
     const lastCode =
       services.length > 0
-        ? Number(services[services.length - 1].code)
+        ? Number(services[services.length - 1]?.code)
         : 0;
 
     const nextCode = String(lastCode + 1).padStart(4, "0");
