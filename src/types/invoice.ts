@@ -11,5 +11,8 @@ export interface Invoice {
   date: string;
   status: "draft" | "paid" | "unpaid";
   items: InvoiceItem[];
+  subtotal?: number;
+  taxAmount?: number;
+  taxRate?: number;
   total: number;
 }

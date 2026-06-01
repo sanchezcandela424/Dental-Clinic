@@ -74,7 +74,7 @@ export default function PriceListPage() {
             variant="outline"
             onClick={handleDownloadPdf}
           >
-            Preuzmi PDF
+            Pregled
           </Button>
         </div>
 

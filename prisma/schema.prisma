@@ -124,6 +124,9 @@ model Invoice {
   id            String        @id @default(cuid())
   patientId     String
   invoiceNumber String        @unique
+  subtotal      Float         @default(0)
+  taxAmount     Float         @default(0)
+  taxRate       Float         @default(0.17)
   totalAmount   Float
   status        InvoiceStatus @default(DRAFT)
   createdAt     DateTime      @default(now())
@@ -132,12 +135,16 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id            String    @id @default(cuid())
-  invoiceId     String
-  treatmentId   String
-  priceSnapshot Float
-  invoice       Invoice   @relation(fields: [invoiceId], references: [id])
-  treatment     Treatment @relation(fields: [treatmentId], references: [id])
+  id              String    @id @default(cuid())
+  invoiceId       String
+  treatmentId     String?
+  serviceCode     String
+  serviceName     String
+  quantity        Int       @default(1)
+  unitPrice       Float
+  totalPrice      Float
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id])
+  treatment       Treatment? @relation(fields: [treatmentId], references: [id])
 }
 
 model PriceListItem {
@@ -182,7 +189,8 @@ enum TreatmentPlanItemStatus {
 
 enum InvoiceStatus {
   DRAFT
-  LOCKED
+  PAID
+  UNPAID
 }
 
 model OdontogramSurface {
