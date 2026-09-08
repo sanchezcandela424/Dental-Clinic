@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="./public/citydent-app-thumbnail.webp" alt="City Dent App" width="900"/>
-</p>
-
 # City Dent - Dental Management System
  
 ## Tech Stack
