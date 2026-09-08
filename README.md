@@ -1,4 +1,4 @@
-# City Dent - Dental Management System
+# Dental - Clinic Management System
  
 ## Tech Stack
  
