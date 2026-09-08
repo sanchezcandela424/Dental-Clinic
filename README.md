@@ -4,32 +4,6 @@
 
 # City Dent - Dental Management System
  
-![Next.js](https://img.shields.io/badge/Next.js-15.2-black?style=flat&logo=next.js)
-![React](https://img.shields.io/badge/React-19.0-blue?style=flat&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat&logo=typescript)
-![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=flat&logo=prisma)
-![tRPC](https://img.shields.io/badge/tRPC-11.17-2D3748?style=flat&logo=trpc)
-![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=flat&logo=tailwindcss)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat&logo=postgresql)
- 
----
- 
-## Table of Contents
- 
-- [Introduction](#introduction)
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Quickstart](#quickstart)
----
- 
-## Introduction
- 
-City Dent is a comprehensive dental practice management system built for modern clinics. It handles patient records, appointments, treatments, invoicing with automatic tax calculation and provides a clean, intuitive interface for daily operations.
- 
-The system is designed for the City Dent clinic in Bosnia and Herzegovina, with full support for Bosnian language and local business requirements.
- 
----
- 
 ## Tech Stack
  
 ### Frontend
@@ -58,45 +32,6 @@ The system is designed for the City Dent clinic in Bosnia and Herzegovina, with 
 - **Jest 30.4** - Unit testing
 - **Playwright 1.59** - End-to-end testing
 - **ts-jest** - TypeScript Jest preprocessor
- 
----
- 
-## Features
- 
-### Patient Management
-- Complete patient profiles with personal information, contact details, and medical history
-- Anamnesis tracking (allergies, anesthesia history, medications, diseases)
-- Odontogram for detailed tooth condition tracking
-- Visit notes for documenting patient interactions
- 
-### Appointment Scheduling
-- Calendar-based appointment booking
-- Appointment status tracking (Scheduled, Waiting, In Progress, Completed, Cancelled)
-- Reason for visit documentation
-- Real-time availability management
- 
-### Treatment Management
-- Treatment recording with diagnosis and therapy
-- Treatment plan creation with multiple planned procedures
-- Treatment status tracking (Planned, Completed, Invoiced)
-- Link treatments to invoices for billing
- 
-### Invoicing
-- Automatic invoice number generation
-- 17% PDV tax calculation (subtotal, tax amount, total)
-- Invoice status management (Draft, Paid, Unpaid)
-- PDF invoice generation with professional layout
-- Price list management for services
- 
-### User Management
-- Role-based access control (Master, Staff)
-- Secure authentication with `NextAuth`
-- Password hashing with `bcrypt`
- 
-### Dashboard
-- Overview of daily operations
-- Quick access to patients, appointments, and invoices
-- Statistics and analytics
  
 ---
  
@@ -139,7 +74,7 @@ npx prisma generate
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
+
 
 
    
